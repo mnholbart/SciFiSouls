@@ -8,8 +8,10 @@ using System.Collections;
 public class Tile : MonoBehaviour {
 
 	#if UNITY_EDITOR
-	public AddTileAction AddedBy;
-
+    /// <summary>
+    /// Whenever layer changes are done or tile modifications this will run
+    /// making sure all changes are saved
+    /// </summary>
     public void ForceUpdateTile(GameData data) {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         int layerIndex = data.GetLayerIndex(this);
@@ -22,12 +24,7 @@ public class Tile : MonoBehaviour {
 	#endif
 
 	void OnDestroy() {
-		#if UNITY_EDITOR
-		if (AddedBy != null) {
-			AddedBy.ForceRemove();
-			AddedBy = null;
-		}
-		#endif
+
 	}
 
 	//TileData properties

@@ -9,15 +9,9 @@ public class GUIManager : MonoBehaviour {
 
     public GameObject MainCanvas;
 
-    //Player UI
-    //Health bar
-    public Image HealthBarImage;
-    public Color FullHealthColor = Color.green;
-    public Color EmptyHealthColor = Color.red;
-    //Stamina Bar
-    public Image StaminaBarImage;
-    public Color FullStaminaColor = Color.blue;
-    public Color EmptyStaminaColor = Color.red;
+    PlayerGUI playerGUI;
+
+
 
     void Start() {
         if (instance != null) {
@@ -25,41 +19,14 @@ public class GUIManager : MonoBehaviour {
             Destroy(instance);
         }
         instance = this;
+        
+        playerGUI = GetComponent<PlayerGUI>();
 
         MainCanvas.SetActive(true);
+        playerGUI.enabled = true;
     }
 
-    public void PlayerReceiveDamage(int amount, int currentHealth, int maxHealth) {
-        UpdateHealthBarImage(currentHealth, maxHealth);
-    }
+    void Update() {
 
-    public void PlayerReceiveHealing(int amount, int currentHealth, int maxHealth) {
-        UpdateHealthBarImage(currentHealth, maxHealth);
-    }
-
-    public void UpdatePlayerHealthbar(int currentHealth, int maxHealth) {
-        UpdateHealthBarImage(currentHealth, maxHealth);
-    }
-
-    public void UpdatePlayerStaminaBar(float currentStamina, float maxStamina) {
-        UpdateStaminaBarImage(currentStamina, maxStamina);
-    }
-
-    void UpdateHealthBarImage(int currentHealth, int maxHealth) {
-        currentHealth = Mathf.Max(currentHealth, 0);
-        maxHealth = Mathf.Max(maxHealth, 1);
-        float percent = (float)currentHealth / (float)maxHealth;
-        percent = Mathf.Clamp(percent, 0, 1.0f);
-        HealthBarImage.transform.localScale = new Vector3(percent, 1, 1);
-        HealthBarImage.color = Color.Lerp(EmptyHealthColor, FullHealthColor, percent);
-    }
-
-    public void UpdateStaminaBarImage(float currentStamina, float maxStamina) {
-        currentStamina = Mathf.Max(currentStamina, 0);
-        maxStamina = Mathf.Max(maxStamina, 1);
-        float percent = currentStamina / maxStamina;
-        percent = Mathf.Clamp(percent, 0, 1.0f);
-        StaminaBarImage.transform.localScale = new Vector3(percent, 1, 1);
-        StaminaBarImage.color = Color.Lerp(EmptyStaminaColor, FullStaminaColor, percent);
     }
 }

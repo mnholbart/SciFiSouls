@@ -295,17 +295,11 @@ MonoBehaviour:
   IncreaseGridSizeKeybind: 61
   DecreaseGridSizeKeybind: 45
   SnapToGridKeybind: 108
-  UndoKeybind: 122
-  RedoKeybind: 120
   AddTileModifier: 0
   IncreaseGridSizeModifier: 0
   DecreaseGridSizeModifier: 0
   SnapToGridModifier: 0
-  UndoModifier: 0
-  RedoModifier: 0
   ShowGridCoordinatesModifier: 4
-  MaxSavedActions: 10
-  MaxSavedRedoActions: 10
 --- !u!4 &296786810
 Transform:
   m_ObjectHideFlags: 0
@@ -895,11 +889,11 @@ RectTransform:
   m_Children:
   - {fileID: 688060632}
   - {fileID: 1278558774}
-  m_Father: {fileID: 1913518905}
-  m_RootOrder: 2
+  m_Father: {fileID: 1870024360}
+  m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -7.6758027, y: 0.3173981}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1547679837
@@ -1109,7 +1103,6 @@ GameObject:
   - 114: {fileID: 1761141134}
   - 114: {fileID: 1761141133}
   - 114: {fileID: 1761141135}
-  - 114: {fileID: 1761141136}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1164,24 +1157,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7617fe3973e18a547b5f8e5ed957574c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1761141136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1761141131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8458b74aae76f4d802e4920157d793, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MainCanvas: {fileID: 1547679835}
-  HealthBarImage: {fileID: 2089497717}
-  FullHealthColor: {r: 0, g: 1, b: 0, a: 1}
-  EmptyHealthColor: {r: 1, g: 0, b: 0, a: 1}
-  StaminaBarImage: {fileID: 202049305}
-  FullStaminaColor: {r: 0, g: 0, b: 1, a: 1}
-  EmptyStaminaColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1001 &1832668210
 Prefab:
   m_ObjectHideFlags: 0
@@ -1236,6 +1211,65 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ca4b5d5507b88af4e9b69e323f2a278d, type: 2}
   m_IsPrefabParent: 0
+--- !u!1 &1870024359
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1870024360}
+  - 114: {fileID: 1870024362}
+  - 114: {fileID: 1870024361}
+  m_Layer: 0
+  m_Name: GUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1870024360
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1870024359}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.6758027, y: -0.3173981, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1547679836}
+  m_Father: {fileID: 1913518905}
+  m_RootOrder: 2
+--- !u!114 &1870024361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1870024359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c39cbee750e750f448de0ebafef04b59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HealthBarImage: {fileID: 2089497717}
+  FullHealthColor: {r: 0, g: 1, b: 0, a: 1}
+  EmptyHealthColor: {r: 1, g: 0, b: 0, a: 1}
+  StaminaBarImage: {fileID: 202049305}
+  FullStaminaColor: {r: 0, g: 0, b: 1, a: 1}
+  EmptyStaminaColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &1870024362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1870024359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8458b74aae76f4d802e4920157d793, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainCanvas: {fileID: 1547679835}
 --- !u!1 &1913518904
 GameObject:
   m_ObjectHideFlags: 0
@@ -1263,7 +1297,7 @@ Transform:
   m_Children:
   - {fileID: 1761141132}
   - {fileID: 296786810}
-  - {fileID: 1547679836}
+  - {fileID: 1870024360}
   m_Father: {fileID: 0}
   m_RootOrder: 0
 --- !u!1 &2089497715

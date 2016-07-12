@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   destructable: 0
   MaxHealth: 0
-  BaseLayerName: New Layer1
+  BaseLayerName: New Layer7
   SubLayer: 0
   WalkingNoiseType: 0
   TripThresholdType: 0
@@ -90,7 +90,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 904673745
+  m_SortingLayerID: -906765605
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300034, guid: f2e63f4105f31a74ca9a84b5a7b9b44b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

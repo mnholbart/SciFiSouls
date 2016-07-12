@@ -23,22 +23,12 @@ public class TileHelper : MonoBehaviour {
 	public KeyCode IncreaseGridSizeKeybind = KeyCode.Equals;
 	public KeyCode DecreaseGridSizeKeybind = KeyCode.Minus;
 	public KeyCode SnapToGridKeybind = KeyCode.L;
-	public KeyCode UndoKeybind = KeyCode.Z;
-	public KeyCode RedoKeybind = KeyCode.X;
 	public EventModifiers AddTileModifier = EventModifiers.None;
 	public EventModifiers IncreaseGridSizeModifier = EventModifiers.None;
 	public EventModifiers DecreaseGridSizeModifier = EventModifiers.None;
 	public EventModifiers SnapToGridModifier = EventModifiers.None;
-	public EventModifiers UndoModifier = EventModifiers.None;
-	public EventModifiers RedoModifier = EventModifiers.None;
 	public EventModifiers ShowGridCoordinatesModifier = EventModifiers.Alt;
 	GUIStyle GridCoordsStyle = new GUIStyle();
-
-	//Undo stuff
-	public List<GridAction> Actions = new List<GridAction>();
-	public List<GridAction> RedoActions = new List<GridAction>();
-	public int MaxSavedActions = 10;
-	public int MaxSavedRedoActions = 10;
 
 	//Need constructor because Start/OnEnable/Awake aren't called on recompile, and this runs in editor
 	//Other option is to use the asset refresh callback
@@ -46,7 +36,7 @@ public class TileHelper : MonoBehaviour {
 		if (_instance == null)
 			_instance = this;
 		else {
-			Debug.LogError("Two Grid.cs being created");
+			Debug.LogError("Two TileHelper.cs being created");
 		}
 	}
 
@@ -74,10 +64,6 @@ public class TileHelper : MonoBehaviour {
 				DecreaseGridSize();
 			if (e.modifiers == SnapToGridModifier && e.keyCode == SnapToGridKeybind)
 				ToggleSnapToGrid();
-			if (e.modifiers == UndoModifier && e.keyCode == UndoKeybind)
-				UndoAction();
-			if (e.modifiers == RedoModifier && e.keyCode == RedoKeybind)
-				RedoAction();
 		}
 
 		if (Selection.activeTransform != null && Selection.activeTransform.GetComponent<Tile>() && e.button == 0 && e.type == EventType.MouseUp) {
@@ -86,51 +72,7 @@ public class TileHelper : MonoBehaviour {
 			}
 		}
 	}
-
-	public void UndoAt(int i) {
-		GridAction undo = Actions[i];
-		undo.UndoAction();
-		Actions.Remove(undo);
-	}
-
-	public void AddAction(GridAction action, bool redo) {
-		if (Actions.Count > MaxSavedActions) {
-			GridAction a = Actions[0];
-			a.ForceRemove();
-		}
-		Actions.Add(action);
-		if (!redo)
-			RedoActions.Clear();
-	}
-
-	public void AddAction(GridAction action) {
-		AddAction(action, true);
-	}
-
-	public void ForceRemove(GridAction action) {
-		Actions.Remove(action);
-	}
-
-	void RedoAction() {
-		if (RedoActions.Count <= 0)
-			return;
-		
-		GridAction redo = RedoActions.Pop();
-		if (redo is AddTileAction) {
-			AddTile((AddTileAction)redo);
-		}
-	}
-
-	void UndoAction() {
-		if (Actions.Count <= 0)
-			return;
-		
-		GridAction undo = Actions[Actions.Count-1];
-		undo.UndoAction();
-		Actions.Remove(undo);
-		RedoActions.Push(undo);
-	}
-
+    
 	void ToggleSnapToGrid() {
 		SnapEnabled = !SnapEnabled;
 		SnapSelectedToGrid();
@@ -148,6 +90,9 @@ public class TileHelper : MonoBehaviour {
 		}
 	}
 
+    /// <summary>
+    /// Get a grid coordinate from a world position
+    /// </summary>
 	public Vector2 GetGridPos(Vector3 position) {
 		position.x -= Width/2f;
 		position.y -= Height/2f;
@@ -174,16 +119,29 @@ public class TileHelper : MonoBehaviour {
 		}
 	}
 
+    /// <summary>
+    /// Create a tile at the target mouse position using the Tile Editor selected tile
+    /// </summary>
 	void AddTile(Event e) {
-		AddTileAction action = new AddTileAction();
-		action.InitAction(e);
-	}
+        GameObject prefab = TileHelper.SelectedTile;
 
-	void AddTile(AddTileAction action) {
-		action.ReinitAction();
-	}
+        if (prefab == null || !prefab.GetComponent<Tile>())
+            return;
+        Ray r = Camera.current.ScreenPointToRay(new Vector3(e.mousePosition.x, -e.mousePosition.y + Camera.current.pixelHeight));
+        float width = TileHelper.Width;
+        float height = TileHelper.Height;
+        Vector3 mousePos = r.origin;
+        mousePos.x = Mathf.FloorToInt(mousePos.x / width) * width + width / 2f;
+        mousePos.y = Mathf.FloorToInt(mousePos.y / height) * height + height / 2f;
+
+        GameObject obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+        obj.transform.position = new Vector3(mousePos.x, mousePos.y, 0);
+
+        Undo.RegisterCreatedObjectUndo(obj, "Create Tile: " + obj.name);
+    }
 
 	void OnDrawGizmos() {
+        //Draw resizable grid lines in front of the camera only
 		if (GridEnabled) {
 			Vector3 pos = SceneView.currentDrawingSceneView.camera.transform.position;
 			pos.x = Mathf.Round(pos.x/Width)*Width;
@@ -200,6 +158,7 @@ public class TileHelper : MonoBehaviour {
 					new Vector3(Mathf.Floor(x/Width) * Width, Mathf.Floor(GridDistance + pos.y), 0.0f));
 			}
 
+            //Draw grid coordinates
 			if (GridDistance <= 20 && Event.current.modifiers == ShowGridCoordinatesModifier) {
 				float zoom = (Mathf.Abs(pos.z)/5f);
 				GridCoordsStyle.fontSize = Mathf.Max(Mathf.RoundToInt(16 - zoom), 2);

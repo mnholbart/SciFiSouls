@@ -10,8 +10,17 @@ GameObject:
   - 4: {fileID: 471050}
   - 212: {fileID: 21290060}
   - 60: {fileID: 6040330}
-  - 114: {fileID: 11477574}
   - 50: {fileID: 5043320}
+  - 114: {fileID: 11443560}
+  - 114: {fileID: 11492090}
+  - 114: {fileID: 11470468}
+  - 114: {fileID: 11413626}
+  - 114: {fileID: 11477042}
+  - 114: {fileID: 11461036}
+  - 114: {fileID: 11447128}
+  - 114: {fileID: 11402542}
+  - 114: {fileID: 11454916}
+  - 114: {fileID: 11430662}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -70,7 +79,44 @@ PolygonCollider2D:
       - {x: 0.06995048, y: -0.029950416}
       - {x: 0.06917739, y: 0.019177377}
       - {x: 0.030772919, y: 0.05912781}
---- !u!114 &11477574
+--- !u!114 &11402542
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667029ba62a97cc48a80594404b036e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SpriteRotation: -90
+--- !u!114 &11413626
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26fc0ce3ef20cef4fa1bedf0cb9a83dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sprinting: 0
+  StaminaDrain: 20
+--- !u!114 &11430662
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75cc5d08a06b4d34cb329d53ee0bba74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sneaking: 0
+--- !u!114 &11443560
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -81,16 +127,100 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dd7a5006c169754fb41ccc600b75fb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sprint: {fileID: 0}
+  stamina: {fileID: 0}
+  movement: {fileID: 0}
+  health: {fileID: 0}
+  die: {fileID: 0}
+  shoot: {fileID: 0}
+  dodge: {fileID: 0}
+  sneak: {fileID: 0}
+  controller: {fileID: 0}
+  input: {fileID: 0}
+--- !u!114 &11447128
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f8f5fea9e27c4a47ae710d30089c6e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   dead: 0
+--- !u!114 &11454916
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 671886d9f89046c429f587f31f7fffbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dodging: 0
+  DodgeSpeed: 320
+  DodgeDuration: 0.5
+  DodgeStaminaCost: 15
+--- !u!114 &11461036
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2f39f22307f6d049885f35f545a71ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isDirty: 0
   MaxHealth: 100
-  CurrentHealth: 0
-  SpriteRotation: -90
-  MoveSpeed: 75
-  CurrentStamina: 0
-  MaxStamina: 40
+--- !u!114 &11470468
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc6ac3debb212834d8ff80e619602b16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoveSpeed: 200
+  MoveVector: {x: 0, y: 0, z: 0}
+  MoveVectorLastFrame: {x: 0, y: 0, z: 0}
+  body: {fileID: 0}
+  CurrMovementType: 0
+--- !u!114 &11477042
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29e718283d76f7b45aee38cc59c1b644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isDirty: 0
+  MaximumStamina: 40
   StaminaRegenPerSecond: 7.5
-  SprintStaminaUsePerSecond: 15
-  StaminaDrainSprintDelayTime: 2
+  StaminaRegenDelayFromOverExertion: 2
+  PercentOfDelayBeforeRegen: 0.5
+  CurrentRegenStatus: 0
+--- !u!114 &11492090
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecd00476cc1c4464380796f9c2955bed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &21290060
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -115,7 +245,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
+  m_SortingLayerID: -1126652615
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 9c66adf107a31c14b815e8873258783d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

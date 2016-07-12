@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
+using System;
+using System.Collections.ObjectModel;
 using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class GameData : ScriptableObject {
 
 	public List<string> layers = new List<string>();

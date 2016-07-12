@@ -7,8 +7,6 @@ public class TileHelperEditor : Editor {
 	TileHelper GridTarget;
 
 	bool ShowKeybinds = true;
-	bool ShowActions = false;
-	bool ShowRedoActions = false;
 
 
 	public void OnEnable() {
@@ -40,20 +38,6 @@ public class TileHelperEditor : Editor {
 		TileHelper.Width = TileHelper.Height = size;
 		GUILayout.EndHorizontal();
 
-		ShowActions = EditorGUILayout.Foldout(ShowActions, "Actions");
-		if (ShowActions) {
-			EditorGUI.indentLevel+=1;
-			ActionsGUI();
-			EditorGUI.indentLevel-=1;
-		}
-
-		ShowRedoActions = EditorGUILayout.Foldout(ShowRedoActions, "Redo-Actions");
-		if (ShowRedoActions) {
-			EditorGUI.indentLevel+=1;
-			RedoActionsGUI();
-			EditorGUI.indentLevel-=1;
-		}
-
 		ShowKeybinds = EditorGUILayout.Foldout(ShowKeybinds, "Keybinds");
 		if (ShowKeybinds) {
 			EditorGUI.indentLevel+=1;
@@ -63,30 +47,6 @@ public class TileHelperEditor : Editor {
 
 		SceneView.RepaintAll(); //Force repaint or it wont update until interacting with scene
 		this.Repaint();
-	}
-
-	void RedoActionsGUI() {
-		for (int i = 0; i < GridTarget.RedoActions.Count; i++) {
-			GridAction action = GridTarget.RedoActions[i];
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField(action.ActionToString());
-			EditorGUILayout.EndHorizontal();
-		}
-	}
-
-	void ActionsGUI() {
-		for (int i = 0; i < GridTarget.Actions.Count; i++) {
-			GridAction action = GridTarget.Actions[i];
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField(action.ActionToString());
-			if (GUILayout.Button("Undo")) {
-				TileHelper._instance.UndoAt(i);
-			}
-			if (action is AddTileAction && GUILayout.Button("Ref")) {
-				((AddTileAction)action).FocusObject();
-			}
-			EditorGUILayout.EndHorizontal();
-		}
 	}
 
 	void KeybindsGUI() {
@@ -112,12 +72,6 @@ public class TileHelperEditor : Editor {
 		EditorGUILayout.LabelField("Toggle Snap To Grid");
 		GridTarget.SnapToGridModifier = (EventModifiers)EditorGUILayout.EnumPopup(GridTarget.SnapToGridModifier);
 		GridTarget.SnapToGridKeybind = (KeyCode)EditorGUILayout.EnumPopup(GridTarget.SnapToGridKeybind);
-		EditorGUILayout.EndHorizontal();
-
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Undo");
-		GridTarget.UndoModifier = (EventModifiers)EditorGUILayout.EnumPopup(GridTarget.UndoModifier);
-		GridTarget.UndoKeybind = (KeyCode)EditorGUILayout.EnumPopup(GridTarget.UndoKeybind);
 		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal();

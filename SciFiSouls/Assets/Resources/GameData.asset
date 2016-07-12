@@ -12,10 +12,6 @@ MonoBehaviour:
   m_Name: GameData
   m_EditorClassIdentifier: 
   layers:
-  - New Layer4
-  - New Layer3
   - New Layer5
   - New Layer7
-  TileDataDictionary:
-    keys: []
-    values: []
+  - New Layer4

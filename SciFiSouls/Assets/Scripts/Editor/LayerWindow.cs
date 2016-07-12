@@ -76,6 +76,7 @@ public class LayerWindow : EditorWindow {
 				}
 			}
             SpriteManager.ForceUpdateTiles();
+            EditorUtility.SetDirty(data);
         }
 	}
 
@@ -88,24 +89,29 @@ public class LayerWindow : EditorWindow {
 			string t = EditorGUILayout.TextField(s);
 			if (!data.layers.Contains(t)) {
 				data.layers[i] = t;
-			}
+                SpriteManager.ForceUpdateTiles();
+                EditorUtility.SetDirty(data);
+            }
 			if (i > 0 && data.layers[i-1] != null && GUILayout.Button("Up")) {
 				string temp = data.layers[i];
 				data.layers[i] = data.layers[i-1];
 				data.layers[i-1] = temp;
                 SpriteManager.ForceUpdateTiles();
+                EditorUtility.SetDirty(data);
             }
 			if (i < data.layers.Count-1 && data.layers[i+1] != null && GUILayout.Button("Down")) {
 				string temp = data.layers[i];
 				data.layers[i] = data.layers[i+1];
 				data.layers[i+1] = temp;
                 SpriteManager.ForceUpdateTiles();
+                EditorUtility.SetDirty(data);
             }
 			if (GUILayout.Button("Remove")) {
 				data.layers.Remove(s);
                 i--;
 				EditorGUILayout.EndHorizontal();
                 SpriteManager.ForceUpdateTiles();
+                EditorUtility.SetDirty(data);
                 continue;
 			}
 			EditorGUILayout.EndHorizontal();
