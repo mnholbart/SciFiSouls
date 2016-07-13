@@ -11,7 +11,9 @@ public class Die : ActivitySystem {
     Stamina stamina;
     Movement movement;
     Dodge dodge;
-
+    Shoot shoot;
+    PlayerController controller;
+    Inventory inventory;
     new void Awake() {
         entity = GetComponent<Entity>();
 
@@ -23,6 +25,11 @@ public class Die : ActivitySystem {
         sprint = entity.sprint;
         movement = entity.movement;
         dodge = entity.dodge;
+        shoot = entity.shoot;
+        inventory = entity.inventory;
+
+        if (entity is Player)
+            controller = ((Player)entity).controller;
 
         base.Start();
     }
@@ -36,6 +43,7 @@ public class Die : ActivitySystem {
         stamina.Add_CanRunTask_Function(stamina.Task_RegenerateStamina, CanRunTask_RegenerateStamina);
         sprint.Add_CanRunTask_Function(sprint.Task_Sprint, CanRunTask_Sprint);
         movement.Add_CanRunTask_Function(movement.Task_Move, CanRunTask_Move);
+        
     }
 
     bool CanRunTask_RegenerateStamina() {
@@ -66,6 +74,34 @@ public class Die : ActivitySystem {
         return true;
     }
 
+    bool CanRunActivity_Shoot() {
+        if (dead)
+            return false;
+
+        return true;
+    }
+
+    bool CanRunActivity_Aim() {
+        if (dead)
+            return false;
+
+        return true;
+    }
+
+    bool CanRunTask_RotateTowardsMouse() {
+        if (dead)
+            return false;
+
+        return true;
+    }
+
+    bool CanRunActivity_SwapToWeaponIndex() {
+        if (dead)
+            return false;
+
+        return true;
+    }
+
     //----------My Tasks---------
 
     protected override void AddTaskRestrictions() {
@@ -73,7 +109,9 @@ public class Die : ActivitySystem {
     }
 
     protected override void AddTasks() {
-
+        if (controller) {
+            controller.Add_CanRunTask_Function(controller.Task_RotateTowardsMouse, CanRunTask_RotateTowardsMouse);
+        }
     }
 
     protected override void AddActivityRestrictions() {
@@ -89,6 +127,14 @@ public class Die : ActivitySystem {
     }
 
     protected override void AddOtherActivityRestrictions() {
-        dodge.Add_CanRunActivity_Function(dodge.Activity_Dodge, CanRunActivity_Dodge);
+        if (dodge)
+            dodge.Add_CanRunActivity_Function(dodge.Activity_Dodge, CanRunActivity_Dodge);
+        if (shoot) {
+            shoot.Add_CanRunActivity_Function(shoot.Activity_Shoot, CanRunActivity_Shoot);
+            shoot.Add_CanRunActivity_Function(shoot.Activity_Aim, CanRunActivity_Aim);
+        }
+        if (inventory)
+            inventory.Add_CanRunActivity_Function(inventory.Activity_SwitchToWeaponIndex, CanRunActivity_SwapToWeaponIndex);
+                            
     }
 }

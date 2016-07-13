@@ -3,14 +3,14 @@
 --- !u!1 &171804
 GameObject:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 161704, guid: 41a27de81070beb4e87b3571f6ddb3f1, type: 2}
+  m_PrefabParentObject: {fileID: 177760, guid: 41a27de81070beb4e87b3571f6ddb3f1, type: 2}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 489048}
   - 212: {fileID: 21297498}
   - 114: {fileID: 11412056}
-  - 60: {fileID: 6087092}
+  - 60: {fileID: 6073604}
   m_Layer: 0
   m_Name: TileBase
   m_TagString: Untagged
@@ -21,7 +21,7 @@ GameObject:
 --- !u!4 &489048
 Transform:
   m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 485286, guid: 41a27de81070beb4e87b3571f6ddb3f1, type: 2}
+  m_PrefabParentObject: {fileID: 497952, guid: 41a27de81070beb4e87b3571f6ddb3f1, type: 2}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 171804}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -30,10 +30,10 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!60 &6087092
+--- !u!60 &6073604
 PolygonCollider2D:
   m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 6061388, guid: 41a27de81070beb4e87b3571f6ddb3f1,
+  m_PrefabParentObject: {fileID: 6024786, guid: 41a27de81070beb4e87b3571f6ddb3f1,
     type: 2}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 171804}
@@ -53,7 +53,7 @@ PolygonCollider2D:
 --- !u!114 &11412056
 MonoBehaviour:
   m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 11473962, guid: 41a27de81070beb4e87b3571f6ddb3f1,
+  m_PrefabParentObject: {fileID: 11461774, guid: 41a27de81070beb4e87b3571f6ddb3f1,
     type: 2}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 171804}
@@ -71,7 +71,7 @@ MonoBehaviour:
 --- !u!212 &21297498
 SpriteRenderer:
   m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 21244470, guid: 41a27de81070beb4e87b3571f6ddb3f1,
+  m_PrefabParentObject: {fileID: 21216660, guid: 41a27de81070beb4e87b3571f6ddb3f1,
     type: 2}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 171804}

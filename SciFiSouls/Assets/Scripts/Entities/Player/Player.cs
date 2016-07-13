@@ -11,6 +11,7 @@ using System.Collections;
 [RequireComponent(typeof(PlayerController))]
 [RequireComponent(typeof(Shoot))]
 [RequireComponent(typeof(Dodge))]
+[RequireComponent(typeof(Inventory))]
 public class Player : Entity {
 
     [HideInInspector]

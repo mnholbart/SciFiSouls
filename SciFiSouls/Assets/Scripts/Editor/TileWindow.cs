@@ -199,7 +199,7 @@ public class TileWindow : EditorWindow {
 			collider.isTrigger = EditorGUILayout.Toggle(collider.isTrigger);
 			EditorGUILayout.EndHorizontal();
 		}
-		if (colliding && GUILayout.Button("Modify Collision")) {
+		if (colliding && GUILayout.Button("(NYI) Modify Collision (NYI)")) {
 			Selection.activeObject = CurrentTile;
 		}
 

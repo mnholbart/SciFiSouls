@@ -1,0 +1,175 @@
+﻿using UnityEngine;
+using System.Collections;
+using System;
+
+public class WeaponController : ActivitySystem {
+
+    public WeaponData EquippedWeapon;
+
+    public float UnequipTime = .5f;
+    public float EquipTime = .25f;
+
+    public int SpriteRotation = -90;
+
+    public bool SwappingWeapon = false;
+    public WeaponData NewWeapon = null;
+
+    SpriteRenderer sr;
+    Entity entity;
+    Shoot shoot;
+    Movement movement;
+    PlayerController pc;
+
+    public enum EquippedWeaponType {
+        none,
+        ranged,
+        melee
+    }
+    public EquippedWeaponType CurrentEquippedWeaponType = EquippedWeaponType.none;
+
+    new void Awake() {
+
+        base.Awake();
+    }
+
+    new void Start() {
+        entity = transform.parent.GetComponent<Entity>();
+        sr = GetComponent<SpriteRenderer>();
+        shoot = entity.shoot;
+        movement = entity.movement;
+
+        if (entity is Player)
+            pc = ((Player)entity).controller;
+
+        base.Start();
+    }
+
+    new void Update() {
+        RotateWithEntity();
+        UpdateWeapon();
+
+        base.Update();
+    }
+
+    void UpdateWeapon() {
+        if (EquippedWeapon != null)
+            EquippedWeapon.AttackCooldownRemaining -= Time.deltaTime;
+    }
+
+    public void Shoot() {
+        AttackBase.AttackData data = new AttackBase.AttackData(EquippedWeapon, transform.parent.position, new Vector3(), new Vector3(), 0);
+
+        if (movement)
+            data.entityVelocity = movement.body.velocity;
+
+        if (pc) {
+            data.mousePosition = pc.GetMouseWorldPosition();
+            data.targetDegreeRotation = pc.GetMouseAngleDegrees();
+        }
+
+        EquippedWeapon.AttackCooldownRemaining = EquippedWeapon.AttackCooldown;
+        EquippedWeapon.AttackScript.Shoot(data);
+    }
+
+    public void RotateWithEntity() {
+        if (entity) {
+            transform.rotation = transform.parent.rotation;
+            if (EquippedWeapon)
+                transform.localPosition = EquippedWeapon.WeaponRenderOffsetFromPlayer;
+        }
+    }
+
+    IEnumerator SwapWeapon(WeaponData data) {
+        SwappingWeapon = true;
+
+        float timer;
+        if (EquippedWeapon != null) {
+            EquippedWeapon = null;
+
+            timer = UnequipTime;
+            while (timer > 0) {
+                yield return null;
+                timer -= Time.deltaTime;
+            }
+            sr.sprite = null;
+        }
+
+        timer = EquipTime;
+        while (timer > 0) {
+            yield return null;
+            timer -= Time.deltaTime;
+        }
+
+        sr.sprite = data.WeaponSprite;
+        EquippedWeapon = data;
+        EquippedWeapon.AttackCooldownRemaining = 0;
+        UpdateWeaponType(data);
+        SwappingWeapon = false;
+    }
+
+    void UpdateWeaponType(WeaponData data) {
+        if (data.MyWeaponType == WeaponData.WeaponType.Melee)
+            CurrentEquippedWeaponType = EquippedWeaponType.melee;
+        else if (data.MyWeaponType == WeaponData.WeaponType.Ranged)
+            CurrentEquippedWeaponType = EquippedWeaponType.ranged;
+        else CurrentEquippedWeaponType = EquippedWeaponType.none;
+    }
+
+    public void TrySwapWeapon(WeaponData data) {
+        NewWeapon = data;
+        TryStartActivity(Activity_EquipNewWeapon);
+    }
+
+    void OnFailStart_Activity_EquipNewWeapon() {
+        NewWeapon = null;
+    }
+
+    void Activity_EquipNewWeapon() {
+        StartCoroutine(SwapWeapon(NewWeapon));
+    }
+
+    bool CanStartActivity_EquipNewWeapon() {
+        if (SwappingWeapon)
+            return false;
+
+        if (NewWeapon == null)
+            return false;
+
+        return true;
+    }
+
+    bool CanRunActivity_Shoot() {
+        if (SwappingWeapon)
+            return false;
+
+        if (EquippedWeapon == null)
+            return false;
+
+        if (EquippedWeapon.AttackCooldownRemaining > 0)
+            return false;
+
+        return true;
+    }
+
+    protected override void AddTaskRestrictions() {
+    }
+
+    protected override void AddTasks() {
+    }
+
+    protected override void AddOtherTaskRestrictions() {
+    }
+
+    protected override void AddActivityRestrictions() {
+        Add_CanRunActivity_Function(Activity_EquipNewWeapon, CanStartActivity_EquipNewWeapon);
+    }
+
+    protected override void AddActivities() {
+        AddActivity(Activity_EquipNewWeapon);
+        Add_OnFailActivity_Function(Activity_EquipNewWeapon, OnFailStart_Activity_EquipNewWeapon);
+    }
+
+    protected override void AddOtherActivityRestrictions() {
+        shoot.Add_CanRunActivity_Function(shoot.Activity_Shoot, CanRunActivity_Shoot);
+    }
+}

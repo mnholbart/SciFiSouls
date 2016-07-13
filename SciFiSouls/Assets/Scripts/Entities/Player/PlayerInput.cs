@@ -9,6 +9,8 @@ public class PlayerInput : ActivitySystem {
     Sprint sprint;
     Dodge dodge;
     Sneak sneak;
+    Shoot shoot;
+    Inventory inventory;
 
     new void Start() {
         player = GetComponent<Player>();
@@ -16,6 +18,8 @@ public class PlayerInput : ActivitySystem {
         sprint = player.sprint;
         dodge = player.dodge;
         sneak = player.sneak;
+        shoot = player.shoot;
+        inventory = player.inventory;
 
         base.Start();
     }
@@ -27,8 +31,40 @@ public class PlayerInput : ActivitySystem {
         if (dodge)
             DodgeInput();
 
+        if (shoot)
+            ShootInput();
+
+        if (inventory)
+            InventoryInput();
+
         base.Update();
 	}
+
+    void InventoryInput() {
+        int switchEquipped = -1;
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            switchEquipped = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            switchEquipped = 2;
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            switchEquipped = 3;
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+            switchEquipped = 4;
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+            switchEquipped = 5;
+
+        if (switchEquipped > 0)
+            inventory.SwitchWeapon(switchEquipped);
+    }
+
+    void ShootInput() {
+        if (Input.GetKey(KeyCode.Mouse0)) {
+            shoot.TryStartActivity(shoot.Activity_Shoot);
+        }
+        if (Input.GetKey(KeyCode.Mouse1)) {
+            shoot.TryStartActivity(shoot.Activity_Aim);
+        }
+    }
 
     void DodgeInput() {
         if (Input.GetKeyDown(KeyCode.Space)) {

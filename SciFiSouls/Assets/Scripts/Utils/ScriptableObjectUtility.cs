@@ -30,4 +30,19 @@ public static class ScriptableObjectUtility
 		EditorUtility.FocusProjectWindow ();
 		Selection.activeObject = asset;
 	}
+
+    public static WeaponData CreateWeaponDataAsset() {
+        WeaponData data = ScriptableObject.CreateInstance<WeaponData>();
+
+        string assetPathAndName = "Assets/Resources/WeaponData/NewWeaponData.asset";
+
+        AssetDatabase.CreateAsset(data, assetPathAndName);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        return data;
+        //EditorUtility.FocusProjectWindow();
+        //Selection.activeObject = data;
+    }
 }

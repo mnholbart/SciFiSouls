@@ -19,6 +19,8 @@ public class Entity : MonoBehaviour {
     public Dodge dodge;
     [HideInInspector]
     public Sneak sneak;
+    [HideInInspector]
+    public Inventory inventory;
 
     public void Awake() {
         sprint = GetComponent<Sprint>();
@@ -29,6 +31,7 @@ public class Entity : MonoBehaviour {
         shoot = GetComponent<Shoot>();
         dodge = GetComponent<Dodge>();
         sneak = GetComponent<Sneak>();
+        inventory = GetComponent<Inventory>();
     }
 
     public void Start() {

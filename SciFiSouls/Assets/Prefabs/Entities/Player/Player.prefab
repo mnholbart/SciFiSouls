@@ -21,6 +21,8 @@ GameObject:
   - 114: {fileID: 11402542}
   - 114: {fileID: 11454916}
   - 114: {fileID: 11430662}
+  - 114: {fileID: 11474902}
+  - 114: {fileID: 11493272}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -35,7 +37,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 165650}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.919226, y: 0.11677617, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 6.2, y: 6.2, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -135,6 +137,7 @@ MonoBehaviour:
   shoot: {fileID: 0}
   dodge: {fileID: 0}
   sneak: {fileID: 0}
+  inventory: {fileID: 0}
   controller: {fileID: 0}
   input: {fileID: 0}
 --- !u!114 &11447128
@@ -193,6 +196,17 @@ MonoBehaviour:
   MoveVectorLastFrame: {x: 0, y: 0, z: 0}
   body: {fileID: 0}
   CurrMovementType: 0
+--- !u!114 &11474902
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbd0fdb497dfe484da36cb8472d3a6ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11477042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -221,6 +235,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecd00476cc1c4464380796f9c2955bed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &11493272
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc179c6753b1dab40a4e965c6f00ef05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NumberQuickSwapSlots: 9
+  QuickSwapSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!212 &21290060
 SpriteRenderer:
   m_ObjectHideFlags: 1

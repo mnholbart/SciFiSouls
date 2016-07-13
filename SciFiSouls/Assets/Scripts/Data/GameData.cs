@@ -34,5 +34,5 @@ public class GameData : ScriptableObject {
 			Debug.LogWarningFormat("No layer exists at index {0}, add one with the layer editor", layerIndex);
 			return "";
 		}
-	}
+    }
 }

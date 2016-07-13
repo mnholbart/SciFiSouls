@@ -14,6 +14,8 @@ public class Dodge : ActivitySystem {
     Sprint sprint;
     Movement movement;
     Stamina stamina;
+    Shoot shoot;
+    Inventory inventory;
 
     new void Awake() {
         entity = GetComponent<Entity>();
@@ -25,6 +27,8 @@ public class Dodge : ActivitySystem {
         sprint = entity.sprint;
         movement = entity.movement;
         stamina = entity.stamina;
+        shoot = entity.shoot;
+        inventory = entity.inventory;
 
         base.Start();
     }
@@ -74,6 +78,13 @@ public class Dodge : ActivitySystem {
         return true;
     }
 
+    bool CanStartActivity_SwapWeaponToIndex() {
+        if (dodging)
+            return false;
+
+        return true;
+    }
+
     bool CanRunTask_Sprint() {
         if (dodging)
             return false;
@@ -88,9 +99,31 @@ public class Dodge : ActivitySystem {
         return true;
     }
 
+    bool CanRunActivity_Shoot() {
+        if (dodging)
+            return false;
+
+        return true;
+    }
+
+    bool CanRunActivity_Aim() {
+        if (dodging)
+            return false;
+
+        return true;
+    }
+
     protected override void AddOtherActivityRestrictions() {
         if (sprint)
             sprint.Add_CanRunTask_Function(sprint.Task_Sprint, CanRunTask_Sprint);
+
+        if (shoot) {
+            shoot.Add_CanRunActivity_Function(shoot.Activity_Shoot, CanRunActivity_Shoot);
+            shoot.Add_CanRunActivity_Function(shoot.Activity_Aim, CanRunActivity_Aim);
+        }
+
+        if (inventory)
+            inventory.Add_CanRunActivity_Function(inventory.Activity_SwitchToWeaponIndex, CanStartActivity_SwapWeaponToIndex);
     }
 
     protected override void AddOtherTaskRestrictions() {

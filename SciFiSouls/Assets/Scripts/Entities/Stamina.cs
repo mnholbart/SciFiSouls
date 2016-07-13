@@ -17,7 +17,7 @@ public class Stamina : ActivitySystem {
 
     public enum RegenStatus {
         OverExerted, //No regen, cant use stamina
-        Cooling, //Regen, cant use stamina
+        Exhausted, //Regen, cant use stamina
         Regenerating //Regen, can use stamina
     }
     public RegenStatus CurrentRegenStatus;
@@ -62,7 +62,7 @@ public class Stamina : ActivitySystem {
             yield return null;
             duration -= Time.deltaTime;
         }
-        CurrentRegenStatus = RegenStatus.Cooling;
+        CurrentRegenStatus = RegenStatus.Exhausted;
         while (duration > 0) {
             yield return null;
             duration -= Time.deltaTime;
@@ -90,7 +90,7 @@ public class Stamina : ActivitySystem {
     }
 
     bool CanRunTask_Sprint() {
-        if (CurrentRegenStatus == RegenStatus.OverExerted || CurrentRegenStatus == RegenStatus.Cooling)
+        if (CurrentRegenStatus == RegenStatus.OverExerted || CurrentRegenStatus == RegenStatus.Exhausted)
             return false;
 
         if (CurrentStamina <= 0)
