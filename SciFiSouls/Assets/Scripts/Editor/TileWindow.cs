@@ -9,7 +9,7 @@ using System.Linq;
 using System.IO;
 
 public class TileWindow : EditorWindow {
-	[MenuItem ("Tile/Tile Maker")]
+	[MenuItem ("Editor/Tile Maker")]
 	public static void  ShowWindow () {
 		TileWindow window = (TileWindow)EditorWindow.GetWindow(typeof(TileWindow));
 		window.titleContent.text = "Tile Maker";
@@ -126,6 +126,7 @@ public class TileWindow : EditorWindow {
 		SelectTile(SelectedTextureIndex);
 	}
 
+    Vector2 scrollPos = new Vector2(0, 0);
 	void DrawTileEditor() {
 		GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
 		EditorGUILayout.LabelField("Tile Name: " + CurrentTile.name);
@@ -133,29 +134,74 @@ public class TileWindow : EditorWindow {
 		if (GUILayout.Button("Select Prefab")) {
 			Selection.activeObject = CurrentTile.gameObject;
 		}
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Trip Threshold", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
+        CurrentTile.TripThresholdType = (Tile.TripThreshold)EditorGUILayout.EnumPopup(CurrentTile.TripThresholdType, GUILayout.MaxWidth(150));
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Walking Noise", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
+        CurrentTile.WalkingNoiseType = (Tile.WalkingNoise)EditorGUILayout.EnumPopup(CurrentTile.WalkingNoiseType, GUILayout.MaxWidth(150));
+        EditorGUILayout.EndHorizontal();
 
-		EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Destructable", GUILayout.MinWidth(boxWidth/2), GUILayout.MaxWidth(120));
 		CurrentTile.destructable = EditorGUILayout.Toggle(CurrentTile.destructable);
 		EditorGUILayout.EndHorizontal();
-		EditorGUILayout.BeginHorizontal();
 		if (CurrentTile.destructable) {
-			EditorGUILayout.LabelField("Health", GUILayout.MaxWidth(40));
-			CurrentTile.MaxHealth = EditorGUILayout.IntSlider(CurrentTile.MaxHealth, 1, 100);
-		}
-		EditorGUILayout.EndHorizontal();
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Trip Threshold", GUILayout.MinWidth(boxWidth/2), GUILayout.MaxWidth(120));
-		CurrentTile.TripThresholdType = (Tile.TripThreshold)EditorGUILayout.EnumPopup(CurrentTile.TripThresholdType, GUILayout.MaxWidth(150));
-		EditorGUILayout.EndHorizontal();
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Walking Noise", GUILayout.MinWidth(boxWidth/2), GUILayout.MaxWidth(120));
-		CurrentTile.WalkingNoiseType = (Tile.WalkingNoise)EditorGUILayout.EnumPopup(CurrentTile.WalkingNoiseType, GUILayout.MaxWidth(150));
-		EditorGUILayout.EndHorizontal();
-		GUILayout.EndArea();
+            TileDestructable destructable = CurrentTile.GetComponentInChildren<TileDestructable>();
+            EditorGUI.indentLevel++;
+		    EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Health", GUILayout.MaxWidth(60));
+			CurrentTile.MaxHealth = EditorGUILayout.IntSlider(CurrentTile.MaxHealth, 1, 1000);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Destruction Phases");
+            EditorGUI.indentLevel++;
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width/2), GUILayout.Height(120));
+            DrawDestructionPhases(destructable);
+            EditorGUILayout.EndScrollView();
+            EditorGUI.indentLevel--;
+            EditorGUI.indentLevel--;
+        }
+
+
+        GUILayout.EndArea();
 
 		DrawRightBox();
 	}
+
+    void DrawDestructionPhases(TileDestructable d) {
+        for (int i = 0; i < d.phases.Count; i++) {
+            if (d.phases[i] == null)
+                return;
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Phase " + i, GUILayout.MaxWidth(90));
+            if (GUILayout.Button("Delete")) {
+                d.phases.RemoveAt(i);
+                i--;
+                continue;
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Percent", GUILayout.MaxWidth(80));
+            d.phases[i].percentActivate = EditorGUILayout.Slider (d.phases[i].percentActivate, 0f, 1f);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Sprite", GUILayout.MaxWidth(80));
+            d.phases[i].sprite = EditorGUILayout.ObjectField(d.phases[i].sprite, typeof(Sprite), false) as Sprite;
+            EditorGUILayout.EndHorizontal();
+            if (CurrentTile.CollisionType != Tile.CollisionTypes.None) {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Height", GUILayout.MaxWidth(80));
+                d.phases[i].height = EditorGUILayout.Slider(d.phases[i].height, 0f, 1f);
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+        if (GUILayout.Button("Add Phase")) {
+            d.phases.Add(new DestructionPhase());
+        }
+        EditorUtility.SetDirty(d);
+    }
 
 	void DrawRightBox() {
 		GUILayout.BeginArea(new Rect(window.position.width/2f, 0, window.window.position.width/2f, window.window.position.height/2f));
@@ -184,29 +230,29 @@ public class TileWindow : EditorWindow {
 	void DrawCollisionEditor() {
 		EditorGUILayout.Space();
 		EditorGUILayout.LabelField("Tile Collision");
+        
+        int oldType = (int)CurrentTile.CollisionType;
+        int newType = GUILayout.SelectionGrid(oldType, Tile.CollisionTypeStrings, 1);
 
-		EditorGUI.indentLevel++;
+        if (oldType != newType)
+            CurrentTile.SetCollider(newType);
 
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Collision Enabled?", GUILayout.MaxWidth(150));
-		PolygonCollider2D collider = CurrentTile.GetComponent<PolygonCollider2D>();
-		bool colliding = collider.enabled;
-		CurrentTile.GetComponent<PolygonCollider2D>().enabled = EditorGUILayout.Toggle(colliding);
-		EditorGUILayout.EndHorizontal();
-		if (colliding) {
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Is Trigger?", GUILayout.MaxWidth(150));
-			collider.isTrigger = EditorGUILayout.Toggle(collider.isTrigger);
-			EditorGUILayout.EndHorizontal();
-		}
-		if (colliding && GUILayout.Button("(NYI) Modify Collision (NYI)")) {
-			Selection.activeObject = CurrentTile;
-		}
+        if (newType == 0)
+            return;
 
-		EditorGUI.indentLevel--;
-	}
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Height", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
+        CurrentTile.HitHeight = EditorGUILayout.Slider(CurrentTile.HitHeight, 0.0f, 1.0f);
+        EditorGUILayout.EndHorizontal();
 
-	void DrawNullTileEditor() {
+        Collider2D coll = CurrentTile.GetComponent<Collider2D>();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Is Trigger?");
+        coll.isTrigger = EditorGUILayout.Toggle(coll.isTrigger);
+        EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawNullTileEditor() {
 		GUILayout.BeginArea(new Rect(0, 0, window.position.width, boxHeight));
 		EditorGUILayout.LabelField("No Tile selected, select one below to edit tile");
 		GUILayout.EndArea();

@@ -4,14 +4,17 @@ using System.Collections;
 public class StaticAttack : MonoBehaviour {
     
     public float degreeRot;
-    public Vector3 start;
+    public Vector3 startVector;
     public float duration;
+    public float startDuration;
 
-    public void Init(Vector3 spawn, float degreeRot, float duration) {
-        transform.position = spawn;
-        //Vector3 direction = (Vector2)(Quaternion.Euler(0, 0, degreeRot) * Vector2.right);
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, degreeRot - 90));
-        this.duration = duration;
+    public void SetSprite(Sprite s) {
+        GetComponent<SpriteRenderer>().sprite = s;
+    }
+
+    public void SetRotation(float rot) {
+        Quaternion rotation = Quaternion.Euler(0, 0, rot);
+        transform.rotation = rotation;
     }
 
     void Update() {
@@ -20,4 +23,12 @@ public class StaticAttack : MonoBehaviour {
             Destroy(gameObject);
     }
 
+    public void SetStartPosition(Vector3 start) {
+        startVector = start;
+        transform.position = start;
+    }
+
+    public void SetScale(Vector3 v) {
+        transform.localScale = v;
+    }
 }

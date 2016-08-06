@@ -41,6 +41,11 @@ public class Inventory : ActivitySystem {
         g.transform.position = new Vector3(0, 0, 0);
 
         WeaponObject = g.GetComponent<WeaponController>();
+
+        GameObject WeaponAttackScripts = Instantiate(Resources.Load<GameObject>("Prefabs/Weapons/RangedWeaponAttackScripts"));
+        WeaponAttackScripts.transform.SetParent(transform, false);
+        WeaponAttackScripts.transform.localPosition = Vector3.zero;
+        WeaponObject.WeaponAttackScripts = WeaponAttackScripts;
     }
 
     public WeaponController GetCurrentlyEquippedWeapon() {

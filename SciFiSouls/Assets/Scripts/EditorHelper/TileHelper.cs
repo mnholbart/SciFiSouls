@@ -131,8 +131,10 @@ public class TileHelper : MonoBehaviour {
         float width = TileHelper.Width;
         float height = TileHelper.Height;
         Vector3 mousePos = r.origin;
-        mousePos.x = Mathf.FloorToInt(mousePos.x / width) * width + width / 2f;
-        mousePos.y = Mathf.FloorToInt(mousePos.y / height) * height + height / 2f;
+        if (SnapEnabled) {
+            mousePos.x = Mathf.FloorToInt(mousePos.x / width) * width + width / 2f;
+            mousePos.y = Mathf.FloorToInt(mousePos.y / height) * height + height / 2f;
+        }
 
         GameObject obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
         obj.transform.position = new Vector3(mousePos.x, mousePos.y, 0);

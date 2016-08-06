@@ -3,42 +3,53 @@ using System.Collections;
 
 public class Projectile : MonoBehaviour {
 
-    public Vector3 direction;
-    public float degreeRot;
+    AttackBase source;
     Rigidbody2D body;
-    public Vector3 start;
-    public float maxRange;
+
+    Vector3 startVector;
+    public Vector3 moveVector;
+
     public float speed;
-
-    public void Init(Sprite sprite, Vector3 startPosition, Vector3 endPosition) {
-        transform.position = startPosition;
-        start = startPosition;
-        direction = endPosition - startPosition;
-        direction.Normalize();
-        GetComponent<SpriteRenderer>().sprite = sprite;
-    }
-
-    public void Init(Sprite sprite, Vector3 startPosition, float directionDegrees, float range, float projectileSpeed, Vector3 entitySpeed) {
-        transform.position = startPosition;
-        start = startPosition;
-        degreeRot = directionDegrees;
-        maxRange = range;
-        direction = (Vector2)(Quaternion.Euler(0, 0, degreeRot) * Vector2.right);
-        direction.Normalize();
-        GetComponent<SpriteRenderer>().sprite = sprite;
-        direction *= projectileSpeed;
-        direction += entitySpeed;
-        //transform.rotation.eulerAngles = new Vector3(0, 0, 0);
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, directionDegrees - 90));
-    }
+    public float maxRange;
+    
 
     void Start() {
         body = GetComponent<Rigidbody2D>();
+        gameObject.layer = LayerMask.NameToLayer("Projectiles");
+        ProjectileManager.instance.RegisterProjectile(this.transform);
     }
 
     void Update() {
-        body.velocity = direction;
-        if (Vector3.Distance(transform.position, start) > maxRange)
+        body.velocity = moveVector * speed;
+        if (Vector3.Distance(transform.position, startVector) > maxRange)
             Destroy(gameObject);
+    }
+
+    public void SetSprite(Sprite s) {
+        GetComponent<SpriteRenderer>().sprite = s;
+    }
+
+    public void SetStartPosition(Vector3 start) {
+        startVector = start;
+        transform.position = start;
+    }
+
+    public void SetSource(AttackBase source) {
+        this.source = source;
+    }
+
+    public void SetRotation(float rot) {
+        Quaternion rotation = Quaternion.Euler(0, 0, rot);
+        transform.rotation = rotation;
+    }
+
+    void OnTriggerEnter2D(Collider2D collide) {
+        if (!collide.GetComponent<IHeightCollider>().PassedHeightCheck()) {
+            if (source.GetComponent<IHeightCallbacks>() != null)
+                source.GetComponent<IHeightCallbacks>().OnPassHeightCheck(this.gameObject);
+            else Destroy(this);
+        } else {
+            source.GetComponent<IHeightCallbacks>().OnFailHeightCheck(this.gameObject);
+        }
     }
 }

@@ -5,6 +5,7 @@ using System;
 public class WeaponController : ActivitySystem {
 
     public WeaponData EquippedWeapon;
+    public AttackBase AttackScript;
 
     public float UnequipTime = .5f;
     public float EquipTime = .25f;
@@ -13,6 +14,8 @@ public class WeaponController : ActivitySystem {
 
     public bool SwappingWeapon = false;
     public WeaponData NewWeapon = null;
+
+    public GameObject WeaponAttackScripts;
 
     SpriteRenderer sr;
     Entity entity;
@@ -57,7 +60,9 @@ public class WeaponController : ActivitySystem {
     }
 
     public void Shoot() {
-        AttackBase.AttackData data = new AttackBase.AttackData(EquippedWeapon, transform.parent.position, new Vector3(), new Vector3(), 0);
+        AttackBase.AttackData data = new AttackBase.AttackData();
+        data.entityPosition = transform.position + (Quaternion.Euler(transform.rotation.eulerAngles) * EquippedWeapon.Offset);
+        data.myWeapon = EquippedWeapon;
 
         if (movement)
             data.entityVelocity = movement.body.velocity;
@@ -68,7 +73,8 @@ public class WeaponController : ActivitySystem {
         }
 
         EquippedWeapon.AttackCooldownRemaining = EquippedWeapon.AttackCooldown;
-        EquippedWeapon.AttackScript.Shoot(data);
+
+        AttackScript.Shoot(data);
     }
 
     public void RotateWithEntity() {
@@ -79,12 +85,25 @@ public class WeaponController : ActivitySystem {
         }
     }
 
+    void UnequipWeapon() {
+        EquippedWeapon = null;
+        AttackScript = null;
+    }
+
+    void EquipWeapon(WeaponData data) {
+        sr.sprite = data.WeaponSprite;
+        EquippedWeapon = data;
+        EquippedWeapon.AttackCooldownRemaining = 0;
+        UpdateWeaponType(data);
+        UpdateAttackScript();
+    }
+
     IEnumerator SwapWeapon(WeaponData data) {
         SwappingWeapon = true;
 
         float timer;
         if (EquippedWeapon != null) {
-            EquippedWeapon = null;
+            UnequipWeapon();
 
             timer = UnequipTime;
             while (timer > 0) {
@@ -100,11 +119,12 @@ public class WeaponController : ActivitySystem {
             timer -= Time.deltaTime;
         }
 
-        sr.sprite = data.WeaponSprite;
-        EquippedWeapon = data;
-        EquippedWeapon.AttackCooldownRemaining = 0;
-        UpdateWeaponType(data);
+        EquipWeapon(data);
         SwappingWeapon = false;
+    }
+
+    void UpdateAttackScript() {
+        AttackScript = (AttackBase)WeaponAttackScripts.GetComponent(EquippedWeapon.Name);
     }
 
     void UpdateWeaponType(WeaponData data) {
@@ -143,6 +163,9 @@ public class WeaponController : ActivitySystem {
             return false;
 
         if (EquippedWeapon == null)
+            return false;
+
+        if (AttackScript == null)
             return false;
 
         if (EquippedWeapon.AttackCooldownRemaining > 0)

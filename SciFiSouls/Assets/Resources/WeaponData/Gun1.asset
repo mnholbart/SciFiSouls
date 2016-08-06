@@ -11,13 +11,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a93537d1e3f1964398548b377512f44, type: 3}
   m_Name: Gun1
   m_EditorClassIdentifier: 
+  Name: Gun1
   WeaponSprite: {fileID: 21300002, guid: 523f1f86ac6daff4d9aee3c2efbd973a, type: 3}
   WeaponRenderOffsetFromPlayer: {x: 0, y: 0.055, z: 0}
-  ProjectileSprite: {fileID: 21300002, guid: fcc63cada6382e746892dc3047199cf1, type: 3}
-  ProjectileRange: 5
+  Offset: {x: 0.18, y: 0.45, z: 0}
+  Sprites:
+  - {fileID: 21300006, guid: 17bcdbde6bc94e849bcb7fd546939c19, type: 3}
+  SpriteRotations:
+  - 90
+  SpriteScales:
+  - {x: 0, y: 0, z: 0}
+  Range: 10
+  Duration: 0
+  Speed: 5
   WeaponDamage: 0
-  ProjectileSpeed: 5
   AttackCooldown: 0.05
-  AttackCooldownRemaining: -1.3045518
+  AttackCooldownRemaining: 1
   MyWeaponType: 2
-  AttackScript: {fileID: 11474888, guid: 4db06278ea098ab41bf55189863b88d8, type: 2}

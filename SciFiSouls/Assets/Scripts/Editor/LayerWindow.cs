@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class LayerWindow : EditorWindow {
 
-	[MenuItem ("Tile/Layer Editor")]
+	[MenuItem ("Editor/Layer Editor")]
 	public static void  ShowWindow () {
 		LayerWindow window = (LayerWindow)EditorWindow.GetWindow(typeof(LayerWindow));
 		window.titleContent.text = "Layer Editor";

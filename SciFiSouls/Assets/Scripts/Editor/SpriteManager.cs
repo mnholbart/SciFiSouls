@@ -54,7 +54,7 @@ public static class SpriteManager {
         }
     }
 
-	public static Tile LoadTileInTileset(string tileName, string atlasName) { //Atlas name is like "tiles_masonry_1x1_d_0"
+	public static Tile LoadTileInTileset(string tileName, string atlasName, int depth = 0) { //Atlas name is like "tiles_masonry_1x1_d_0"
         if (atlasName.Contains("_0")) //Sort of hard coded for a _0 that exists for no reason i know
             atlasName = atlasName.Substring(0, atlasName.Length - 2);
 
@@ -67,6 +67,9 @@ public static class SpriteManager {
 			if (tile != null)
 				return tile.GetComponent<Tile>();
 		}
+        LoadedTilesets.Clear();
+        if (depth == 0)
+            return LoadTileInTileset(tileName, atlasName, depth++);
         Debug.LogErrorFormat("[SpriteManager] Failed to load tile {0} in tileset {1}", tileName, atlasName);
 		return null;
 	}

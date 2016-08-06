@@ -24,6 +24,7 @@ public class InventoryManager : MonoBehaviour {
 
     public WeaponData GetWeaponByName(string test) {
         WeaponData data = database.weapons.FindByName<WeaponData>(test);
-        return data;
+        WeaponData newData = Instantiate(data);
+        return newData;
     }
 }

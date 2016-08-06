@@ -37,7 +37,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 165650}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.8178879, y: 1.1095147, z: 0}
   m_LocalScale: {x: 6.2, y: 6.2, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -50,14 +50,14 @@ Rigidbody2D:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 165650}
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 5
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_SleepingMode: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!60 &6040330
 PolygonCollider2D:
@@ -73,14 +73,14 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Points:
     m_Paths:
-    - - {x: -0.019226845, y: 0.05912779}
-      - {x: -0.057581782, y: 0.01768086}
-      - {x: -0.058354873, y: -0.029226951}
-      - {x: -0.01763144, y: -0.070723474}
-      - {x: 0.026858393, y: -0.06995043}
-      - {x: 0.06995048, y: -0.029950416}
+    - - {x: -0.028934347, y: 0.07004873}
+      - {x: -0.0709296, y: 0.029208507}
+      - {x: -0.069882534, y: -0.028013501}
+      - {x: -0.020058319, y: -0.06890332}
+      - {x: 0.020184498, y: -0.068737}
+      - {x: 0.0693437, y: -0.019029457}
       - {x: 0.06917739, y: 0.019177377}
-      - {x: 0.030772919, y: 0.05912781}
+      - {x: 0.028346028, y: 0.06944207}
 --- !u!114 &11402542
 MonoBehaviour:
   m_ObjectHideFlags: 1

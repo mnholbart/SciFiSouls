@@ -25,6 +25,8 @@ public class WeaponDatabaseWindow : EditorWindow {
     List<string> ViewMaskOptions = new List<string>();
 
     List<bool> weaponFoldouts = new List<bool>();
+    List<bool> allSpritesFoldouts = new List<bool>();
+    List<List<bool>> spritesFoldouts = new List<List<bool>>();
 
     void Initialize() {
         string[] names = Enum.GetNames(typeof(WeaponData.WeaponType));
@@ -60,6 +62,7 @@ public class WeaponDatabaseWindow : EditorWindow {
         DrawWeapons();
 
         SaveDatabase();
+
     }
 
     void SaveDatabase() {
@@ -91,12 +94,28 @@ public class WeaponDatabaseWindow : EditorWindow {
 
     void ResetFoldouts() {
         weaponFoldouts.Clear();
-        //weaponFoldouts.Add(false);
+        allSpritesFoldouts.Clear(); ;
+        spritesFoldouts.Clear();
     }
 
     void CheckAddFoldout(int i) {
         while (i >= weaponFoldouts.Count)
             weaponFoldouts.Add(false);
+        while (i >= allSpritesFoldouts.Count)
+            allSpritesFoldouts.Add(false);
+    }
+
+    void CheckAddAllSpriteFoldout(int index) {
+        while (index >= spritesFoldouts.Count) {
+            spritesFoldouts.Add(new List<bool>());
+        }
+    }
+
+    void CheckAddSpriteFoldout(int index, int i) {
+        //Debug.Log(spritesFoldouts[index].Count);
+        while (i >= spritesFoldouts[index].Count)
+            spritesFoldouts[index].Add(false);
+        //Debug.Log(spritesFoldouts[index].Count);
     }
 
     void DrawWeapons() {
@@ -113,7 +132,7 @@ public class WeaponDatabaseWindow : EditorWindow {
         for (int i = 0; i < data.Count; i++) {
             WeaponData curr = data[i];
             if (!InMask(curr) || curr == null)
-                    continue;
+                continue;
             CheckAddFoldout(i);
             EditorGUILayout.BeginHorizontal();
             weaponFoldouts[i] = EditorGUILayout.Foldout(weaponFoldouts[i], curr.name);
@@ -125,17 +144,19 @@ public class WeaponDatabaseWindow : EditorWindow {
             }
             EditorGUILayout.EndHorizontal();
             if (weaponFoldouts[i])
-                DrawWeapon(curr);
+                DrawWeapon(curr, i);
         }
     }
 
-    void DrawWeapon(WeaponData data) {
+    void DrawWeapon(WeaponData data, int index) {
         EditorGUI.indentLevel++;
         GUILayout.BeginHorizontal(); //Name
 
-        string temp = EditorGUILayout.DelayedTextField("Weapon Sprite", data.name);
-        if (temp != data.name) {
+        string temp = EditorGUILayout.DelayedTextField("Weapon Name", data.name);
+        temp = new string(temp.ToCharArray().Where(c => !char.IsWhiteSpace(c)).ToArray());
+        if (temp != data.name || temp != data.Name) {
             data.name = temp;
+            data.Name = temp;
             RenameWeapon(temp, data);
         }
         GUILayout.EndHorizontal();
@@ -151,23 +172,27 @@ public class WeaponDatabaseWindow : EditorWindow {
         EditorGUILayout.PrefixLabel("Weapon Sprite");
         data.WeaponSprite = EditorGUILayout.ObjectField(data.WeaponSprite, typeof(Sprite), false) as Sprite;
         GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal(); //Projectile sprite
-        if (data.MyWeaponType == WeaponData.WeaponType.Ranged) { 
-            EditorGUILayout.LabelField("Projectile Sprite");
-            data.ProjectileSprite = EditorGUILayout.ObjectField(data.ProjectileSprite, typeof(Sprite), false) as Sprite;
-        }
-        GUILayout.EndHorizontal();
+
+        CheckAddAllSpriteFoldout(index);
+        allSpritesFoldouts[index] = EditorGUILayout.Foldout(allSpritesFoldouts[index], "Sprites");
+        if (allSpritesFoldouts[index])
+            DrawSprites(data, index);
+
         EditorGUILayout.BeginHorizontal(); //Weapon sprite offset
         data.WeaponRenderOffsetFromPlayer = EditorGUILayout.Vector2Field("Render Offset From Entity", data.WeaponRenderOffsetFromPlayer);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal(); //Projectile range
         if (data.MyWeaponType == WeaponData.WeaponType.Ranged) {
-            data.ProjectileRange = EditorGUILayout.FloatField("Projectile Range/Duration", data.ProjectileRange);
+            data.Range = EditorGUILayout.FloatField("Range", data.Range);
         }
         EditorGUILayout.EndHorizontal();
-        EditorGUILayout.BeginHorizontal(); //Attack logic script
-        EditorGUILayout.LabelField("Attack Script");
-        data.AttackScript = EditorGUILayout.ObjectField(data.AttackScript, typeof(AttackBase), false) as AttackBase;
+        EditorGUILayout.BeginHorizontal(); //Another offset
+        data.Offset = EditorGUILayout.Vector2Field("Another Offset", data.Offset);
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal(); //Projectile duration
+        if (data.MyWeaponType == WeaponData.WeaponType.Ranged) {
+            data.Duration = EditorGUILayout.FloatField("Duration", data.Duration);
+        }
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal(); //Attack Cooldown
         EditorGUILayout.LabelField("Attack Cooldown");
@@ -175,11 +200,58 @@ public class WeaponDatabaseWindow : EditorWindow {
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal(); //Projectile speed
         if (data.MyWeaponType == WeaponData.WeaponType.Ranged) {
-            EditorGUILayout.LabelField("Projectile Speed");
-            data.ProjectileSpeed = EditorGUILayout.FloatField(data.ProjectileSpeed);
+            EditorGUILayout.LabelField("Speed");
+            data.Speed = EditorGUILayout.FloatField(data.Speed);
         }
         EditorGUILayout.EndHorizontal();
         EditorGUI.indentLevel--;
+    }
+
+    void DrawSprites(WeaponData data, int index) {
+        for (int i = 0; i < data.Sprites.Count; i++) {
+            EditorGUILayout.BeginHorizontal();
+            CheckAddSpriteFoldout(index, i);
+            EditorGUI.indentLevel++;
+            spritesFoldouts[index][i] = EditorGUILayout.Foldout(spritesFoldouts[index][i], "Sprite: " + i);
+            if (GUILayout.Button("Delete")) {
+                data.Sprites.RemoveAt(i);
+                data.SpriteRotations.RemoveAt(i);
+                data.SpriteScales.RemoveAt(i);
+                spritesFoldouts[index].RemoveAt(i);
+                i--;
+                continue;
+            }
+            EditorGUILayout.EndHorizontal();
+            if (!spritesFoldouts[index][i]) {
+                EditorGUI.indentLevel--;
+                continue;
+            }
+
+            EditorGUI.indentLevel++;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Sprite");
+            data.Sprites[i] = EditorGUILayout.ObjectField(data.Sprites[i], typeof(Sprite), false) as Sprite;
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Rotation");
+            data.SpriteRotations[i] = EditorGUILayout.FloatField(data.SpriteRotations[i]);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            //EditorGUILayout.LabelField("Scale");
+            data.SpriteScales[i] = EditorGUILayout.Vector3Field("Scale", data.SpriteScales[i]);
+            EditorGUILayout.EndHorizontal();
+            EditorGUI.indentLevel--;
+            EditorGUI.indentLevel--;
+        }
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(" ", GUILayout.Width((position.width - 150)/2));
+        if (GUILayout.Button("Add Sprite", GUILayout.Width(150))) { //Width same as number above
+            data.Sprites.Add(null);
+            data.SpriteRotations.Add(0f);
+            data.SpriteScales.Add(new Vector3(1,1,1));
+            spritesFoldouts[index].Add(false);
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     bool InMask(WeaponData data) {
