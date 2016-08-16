@@ -11,15 +11,22 @@ public class TileHelper : MonoBehaviour {
 
 	//Grid stuff
 	public Color GridColor = Color.gray;
-	public bool SnapEnabled = true;
-	public bool GridEnabled = true;
+	public static bool GridSnapEnabled = true;
+	public static bool HeightSnapEnabled = true;
+    public bool GridEnabled = true;
 	public float GridDistance = 20f;
 	public static int Width = 1;
 	public static int Height = 1;
 	public static GameObject SelectedTile;
 
-	//Editor stuff
-	public KeyCode AddTileKeybind = KeyCode.P;
+    //Tile specific paste settings
+    public static float PasteHeight = 0;
+    public static int LayerIndex = 0;
+    public static int SublayerIndex = 0;
+    public static GameData data;
+
+    //Editor stuff
+    public KeyCode AddTileKeybind = KeyCode.P;
 	public KeyCode IncreaseGridSizeKeybind = KeyCode.Equals;
 	public KeyCode DecreaseGridSizeKeybind = KeyCode.Minus;
 	public KeyCode SnapToGridKeybind = KeyCode.L;
@@ -67,14 +74,14 @@ public class TileHelper : MonoBehaviour {
 		}
 
 		if (Selection.activeTransform != null && Selection.activeTransform.GetComponent<Tile>() && e.button == 0 && e.type == EventType.MouseUp) {
-			if (SnapEnabled) {
+			if (GridSnapEnabled) {
 				SnapSelectedToGrid();
 			}
 		}
 	}
     
 	void ToggleSnapToGrid() {
-		SnapEnabled = !SnapEnabled;
+		GridSnapEnabled = !GridSnapEnabled;
 		SnapSelectedToGrid();
 	}
 
@@ -85,7 +92,8 @@ public class TileHelper : MonoBehaviour {
 			if (o.GetComponent<Tile>()) {
 				Transform t = o.transform;
 				Vector2 gridPos = GetGridPos(t.position);
-				t.position = new Vector3(gridPos.x + Width/2f, gridPos.y + Height/2f, 0);
+				t.position = new Vector3(gridPos.x + Width/2f, gridPos.y + Height/2f, HeightSnapEnabled ? PasteHeight : 0);
+                t.rotation = Quaternion.identity;
 			}
 		}
 	}
@@ -131,13 +139,17 @@ public class TileHelper : MonoBehaviour {
         float width = TileHelper.Width;
         float height = TileHelper.Height;
         Vector3 mousePos = r.origin;
-        if (SnapEnabled) {
+        if (GridSnapEnabled) {
             mousePos.x = Mathf.FloorToInt(mousePos.x / width) * width + width / 2f;
             mousePos.y = Mathf.FloorToInt(mousePos.y / height) * height + height / 2f;
         }
 
         GameObject obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-        obj.transform.position = new Vector3(mousePos.x, mousePos.y, 0);
+        obj.transform.position = new Vector3(mousePos.x, mousePos.y, HeightSnapEnabled ? PasteHeight : 0);
+        obj.transform.rotation = Quaternion.identity;
+        Tile t = obj.GetComponent<Tile>();
+        t.SetLayerIndex(LayerIndex, data);
+        t.SetSubLayerIndex(SublayerIndex, data);
 
         Undo.RegisterCreatedObjectUndo(obj, "Create Tile: " + obj.name);
     }

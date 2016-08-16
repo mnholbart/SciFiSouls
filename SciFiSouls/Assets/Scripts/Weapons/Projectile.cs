@@ -44,7 +44,9 @@ public class Projectile : MonoBehaviour {
     }
 
     void OnTriggerEnter2D(Collider2D collide) {
-        if (!collide.GetComponent<IHeightCollider>().PassedHeightCheck()) {
+        bool passed = collide.GetComponent<IHeightCollider>().PassedHeightCheck();
+        Debug.Log(passed);
+        if (passed) {
             if (source.GetComponent<IHeightCallbacks>() != null)
                 source.GetComponent<IHeightCallbacks>().OnPassHeightCheck(this.gameObject);
             else Destroy(this);

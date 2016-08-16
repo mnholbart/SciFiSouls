@@ -98,7 +98,7 @@ public static class SpriteManager {
 			var prefab = PrefabUtility.CreateEmptyPrefab(folderPath + "/" + s.name + ".prefab");
 			var basePrefab = (GameObject)AssetDatabase.LoadAssetAtPath("Assets/Prefabs/TileBase.prefab", typeof(GameObject));
 			GameObject g = PrefabUtility.ReplacePrefab(basePrefab, prefab, ReplacePrefabOptions.ConnectToPrefab);
-			g.GetComponent<SpriteRenderer>().sprite = s;
+            g.GetComponent<ISprite>().ChangeSprite(s);
 		}
 	}
 

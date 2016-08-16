@@ -17,10 +17,13 @@ MonoBehaviour:
   Offset: {x: 0.18, y: 0.45, z: 0}
   Sprites:
   - {fileID: 21300006, guid: 17bcdbde6bc94e849bcb7fd546939c19, type: 3}
+  - {fileID: 0}
   SpriteRotations:
   - 90
+  - 0
   SpriteScales:
   - {x: 0, y: 0, z: 0}
+  - {x: 1, y: 1, z: 1}
   Range: 10
   Duration: 0
   Speed: 5

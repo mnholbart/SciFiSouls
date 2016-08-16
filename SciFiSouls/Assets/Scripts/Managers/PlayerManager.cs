@@ -22,5 +22,6 @@ public class PlayerManager : MonoBehaviour {
 	public void InitializePlayer() {
 		GameObject obj = Instantiate(PlayerPrefab) as GameObject;
 		Player = obj.GetComponent<Player>();
+        Player.Spawn(new Vector3(0, 0, 0), 1, -.01f);
 	}
 }

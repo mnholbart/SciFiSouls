@@ -18,9 +18,8 @@ public class WeaponController : ActivitySystem {
     public GameObject WeaponAttackScripts;
 
     SpriteRenderer sr;
-    Entity entity;
-    Shoot shoot;
-    Movement movement;
+    Shoot shoot { get { return entity.shoot; } }
+    Movement movement { get { return entity.movement; } }
     PlayerController pc;
 
     public enum EquippedWeaponType {
@@ -30,17 +29,9 @@ public class WeaponController : ActivitySystem {
     }
     public EquippedWeaponType CurrentEquippedWeaponType = EquippedWeaponType.none;
 
-    new void Awake() {
-
-        base.Awake();
-    }
-
     new void Start() {
         entity = transform.parent.GetComponent<Entity>();
         sr = GetComponent<SpriteRenderer>();
-        shoot = entity.shoot;
-        movement = entity.movement;
-
         if (entity is Player)
             pc = ((Player)entity).controller;
 
@@ -54,6 +45,10 @@ public class WeaponController : ActivitySystem {
         base.Update();
     }
 
+    public void SetLayerName(string layerName) {
+        sr.sortingLayerName = layerName;
+    }
+
     void UpdateWeapon() {
         if (EquippedWeapon != null)
             EquippedWeapon.AttackCooldownRemaining -= Time.deltaTime;
@@ -63,6 +58,8 @@ public class WeaponController : ActivitySystem {
         AttackBase.AttackData data = new AttackBase.AttackData();
         data.entityPosition = transform.position + (Quaternion.Euler(transform.rotation.eulerAngles) * EquippedWeapon.Offset);
         data.myWeapon = EquippedWeapon;
+        data.LayerIndex = sr.sortingLayerID;
+        data.SubLayerIndex = sr.sortingOrder;
 
         if (movement)
             data.entityVelocity = movement.body.velocity;
@@ -96,6 +93,7 @@ public class WeaponController : ActivitySystem {
         EquippedWeapon.AttackCooldownRemaining = 0;
         UpdateWeaponType(data);
         UpdateAttackScript();
+        RotateWithEntity();
     }
 
     IEnumerator SwapWeapon(WeaponData data) {

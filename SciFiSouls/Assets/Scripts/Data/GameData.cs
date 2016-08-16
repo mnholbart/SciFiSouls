@@ -24,6 +24,18 @@ public class GameData : ScriptableObject {
 		}
 	}
 
+    public int GetLayerIndex(string layerName) {
+        if (layers.Count == 0)
+            return -1;
+        else if (layers.Contains(layerName)) {
+            return layers.IndexOf(layerName);
+        } else {
+            if (layerName != "") //No warning if its just empty/just initialized
+                Debug.LogWarningFormat("No layer found with name \"{0}\": setting layer to 0 named {2}", layerName, layers[0]);
+            return 0;
+        }
+    }
+
 	public string GetLayerName(int layerIndex) {
         if (layers.Count == 0) {
             Debug.LogWarning("No layer exists, add one with the layer editor");

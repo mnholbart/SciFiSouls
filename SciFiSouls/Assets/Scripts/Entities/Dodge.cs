@@ -9,20 +9,13 @@ public class Dodge : ActivitySystem {
     public float DodgeSpeed = 320;
     public float DodgeDuration = 0.5f;
     public float DodgeStaminaCost = 15f;
-
-    Entity entity;
+    
     Sprint sprint;
     Movement movement;
     Stamina stamina;
     Shoot shoot;
     Inventory inventory;
-
-    new void Awake() {
-        entity = GetComponent<Entity>();
-
-        base.Awake();
-    }
-
+    
     new void Start() {
         sprint = entity.sprint;
         movement = entity.movement;

@@ -30,7 +30,7 @@ public class WeaponDatabaseWindow : EditorWindow {
 
     void Initialize() {
         string[] names = Enum.GetNames(typeof(WeaponData.WeaponType));
-        ViewMaskOptions.Add("View ALL Weapon Typees");
+        ViewMaskOptions.Add("View ALL Weapon Types");
         for (int i = 1; i < names.Length; i++) {
             ViewMaskOptions.Add("View " + names[i] + " Weapon Types");
         }

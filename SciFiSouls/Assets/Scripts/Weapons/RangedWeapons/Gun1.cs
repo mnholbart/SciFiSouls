@@ -24,7 +24,14 @@ public class Gun1 : AttackBase, IHeightCallbacks {
         BoxCollider2D box = g.GetComponent<BoxCollider2D>();
         box.size = new Vector3(.02f, .04f);
         box.offset = new Vector3(.01f, .02f);
+        SetLayers(g, data);
         g.SetActive(true);
+    }
+
+    public override void SetLayers(GameObject g, AttackData d) {
+        SpriteRenderer sr = g.GetComponent<SpriteRenderer>();
+        sr.sortingLayerID = d.LayerIndex;
+        sr.sortingOrder = d.SubLayerIndex;
     }
 
     public void OnPassHeightCheck(GameObject p) {

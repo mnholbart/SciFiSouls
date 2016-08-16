@@ -6,18 +6,12 @@ public class Sprint : ActivitySystem {
 
     public bool sprinting = false;
     public float StaminaDrain = 20f;
-
-    Entity entity;
+    
     Stamina stamina;
     Sneak sneak;
 
     delegate void UseStamina(float amount);
 
-    new void Awake() {
-        entity = GetComponent<Entity>();
-
-        base.Awake();
-    }
 
     new void Start() {
         stamina = entity.stamina;

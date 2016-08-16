@@ -7,24 +7,20 @@ public class Inventory : ActivitySystem {
     WeaponController WeaponObject = null;
     int WeaponIndexToSwitchTo = -1;
     public int NumberQuickSwapSlots = 9;
-
-    Entity entity;
-    Shoot shoot;
+    
+    Shoot shoot { get { return entity.shoot; } }
 
     //Array of weapon data held 1-9 or whatever
     //Activity_ChangeWeapon will tell WeaponObj to switch the current weapon data to the weapon data in 1-9
     public WeaponData[] QuickSwapSlots;
 
     new void Awake() {
-        entity = GetComponent<Entity>();
         QuickSwapSlots = new WeaponData[NumberQuickSwapSlots];
 
         base.Awake();
     }
 
     new void Start() {
-        shoot = entity.shoot;
-
         InstantiateWeaponPrefab();
 
         QuickSwapSlots[1] = InventoryManager.instance.GetWeaponByName("Gun1");
@@ -46,6 +42,7 @@ public class Inventory : ActivitySystem {
         WeaponAttackScripts.transform.SetParent(transform, false);
         WeaponAttackScripts.transform.localPosition = Vector3.zero;
         WeaponObject.WeaponAttackScripts = WeaponAttackScripts;
+        WeaponObject.GetComponent<SpriteRenderer>().sortingOrder = GetComponent<SpriteRenderer>().sortingOrder - 1;
     }
 
     public WeaponController GetCurrentlyEquippedWeapon() {

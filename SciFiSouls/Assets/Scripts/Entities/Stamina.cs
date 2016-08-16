@@ -21,16 +21,9 @@ public class Stamina : ActivitySystem {
         Regenerating //Regen, can use stamina
     }
     public RegenStatus CurrentRegenStatus;
-
-    Entity entity;
+    
     Sprint sprint;
     Dodge dodge;
-
-    new void Awake() {
-        entity = GetComponent<Entity>();
-
-        base.Awake();
-    }
 
     new void Start() {
         sprint = entity.sprint;

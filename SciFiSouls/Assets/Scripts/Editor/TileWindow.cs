@@ -56,7 +56,10 @@ public class TileWindow : EditorWindow {
 	int boxWidth;
 	int boxHeight;
 
-	void OnGUI () {
+    CollisionEditorWindow collisionWindow;
+
+
+    void OnGUI () {
 		if (CurrentTile != null) {
 			DrawTileEditor();
 		} else {
@@ -96,7 +99,13 @@ public class TileWindow : EditorWindow {
 		ShowSpriteThumbnails();
 		EditorGUILayout.EndScrollView();
 		GUILayout.EndArea();
-	}
+
+        if (collisionWindow != null)
+            collisionWindow.Repaint();
+
+        if (CurrentTile != null)
+            EditorUtility.SetDirty(CurrentTile);
+    }
 
     void SelectTile(int i) {
         if (CurrentAtlas == null || DisplayedSprites.Count() <= 0)
@@ -106,32 +115,37 @@ public class TileWindow : EditorWindow {
         string tileName = s.name;
 
         CurrentTile = SpriteManager.LoadTileInTileset(tileName, CurrentAtlas.name);
+        selectedTexture = DisplayedTextures[i];
         //Debug.Log(CurrentTile);
         if (CurrentTile == null) { 
             return;
         }
 		TileHelper._instance.UpdateSelectedTile(CurrentTile.gameObject);
 		if (CurrentTile != null) {
-			SelectedLayerIndex = data.GetLayerIndex(CurrentTile);
-			SublayerIndex = CurrentTile.SubLayer;
+            //SelectedLayerIndex = 0;
+			///SublayerIndex = CurrentTile.SubLayer;
 		} else {
 			CurrentTile = null;
-			SelectedLayerIndex = 0;
-			SublayerIndex = 0;
+            selectedTexture = null;
+			//SublayerIndex = 0;
 		}
 
 	}
+    public Texture2D selectedTexture;
 
 	void UpdateTile() {
 		SelectTile(SelectedTextureIndex);
 	}
 
     Vector2 scrollPos = new Vector2(0, 0);
-	void DrawTileEditor() {
-		GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
+    Vector2 leftScrollPos = new Vector2(0, 0);
+    void DrawTileEditor() {
+        GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
+        leftScrollPos = EditorGUILayout.BeginScrollView(leftScrollPos, GUIStyle.none, GUIStyle.none, GUILayout.Width(boxWidth), GUILayout.Height(boxHeight));
 		EditorGUILayout.LabelField("Tile Name: " + CurrentTile.name);
+		EditorGUILayout.LabelField("Tile Default Parameters: ");
 
-		if (GUILayout.Button("Select Prefab")) {
+        if (GUILayout.Button("Select Prefab")) {
 			Selection.activeObject = CurrentTile.gameObject;
 		}
         EditorGUILayout.BeginHorizontal();
@@ -156,14 +170,21 @@ public class TileWindow : EditorWindow {
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField("Destruction Phases");
             EditorGUI.indentLevel++;
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width/2), GUILayout.Height(120));
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width/2), GUILayout.Height(Mathf.Min(120, destructable.phases.Count * 90)));
             DrawDestructionPhases(destructable);
             EditorGUILayout.EndScrollView();
             EditorGUI.indentLevel--;
             EditorGUI.indentLevel--;
         }
 
+        DrawCollisionEditor();
+        if (GUILayout.Button("Edit Collider"))
+            OpenCollisionWindow();
 
+        if (GUILayout.Button("Edit Walk Collider"))
+            OpenWalkCollisionWindow();
+
+        EditorGUILayout.EndScrollView();
         GUILayout.EndArea();
 
 		DrawRightBox();
@@ -190,7 +211,7 @@ public class TileWindow : EditorWindow {
             EditorGUILayout.LabelField("Sprite", GUILayout.MaxWidth(80));
             d.phases[i].sprite = EditorGUILayout.ObjectField(d.phases[i].sprite, typeof(Sprite), false) as Sprite;
             EditorGUILayout.EndHorizontal();
-            if (CurrentTile.CollisionType != Tile.CollisionTypes.None) {
+            if (CurrentTile.MyColliderData.data.CurrentColliderType != ColliderData.ColliderTypes.None) {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Height", GUILayout.MaxWidth(80));
                 d.phases[i].height = EditorGUILayout.Slider(d.phases[i].height, 0f, 1f);
@@ -204,30 +225,71 @@ public class TileWindow : EditorWindow {
     }
 
 	void DrawRightBox() {
-		GUILayout.BeginArea(new Rect(window.position.width/2f, 0, window.window.position.width/2f, window.window.position.height/2f));
-		DrawLayerEditor ();
-		DrawCollisionEditor();
-		GUILayout.EndArea();
+        GUILayout.BeginArea(new Rect(window.position.width/2f, 0, window.window.position.width/2f, window.window.position.height/2f));
+        EditorGUILayout.LabelField("Tile Paste Settings");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Grid Snap", GUILayout.MaxWidth(120));
+        TileHelper.GridSnapEnabled = EditorGUILayout.Toggle(TileHelper.GridSnapEnabled);
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Height Snap", GUILayout.MaxWidth(120));
+        TileHelper.HeightSnapEnabled = EditorGUILayout.Toggle(TileHelper.HeightSnapEnabled);
+        EditorGUILayout.EndHorizontal();
+        if (TileHelper.HeightSnapEnabled) {
+            EditorGUI.indentLevel++;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Paste Height", GUILayout.MaxWidth(100));
+            TileHelper.PasteHeight = EditorGUILayout.Slider(TileHelper.PasteHeight, -10, 10);
+            TileHelper.PasteHeight = Mathf.RoundToInt(TileHelper.PasteHeight * 10f) / 10f;
+            EditorGUILayout.EndHorizontal();
+            EditorGUI.indentLevel--;
+        }
+        DrawLayerEditor();
+        GUILayout.EndArea();
 	}
 
+    void OpenCollisionWindow() {
+        if (collisionWindow == null) {
+            CollisionEditorWindow window = CollisionEditorWindow.CreateWindow(this);
+            collisionWindow = window;
+        }
+        collisionWindow.CurrentTile = CurrentTile;
+        collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.Collider);
+    }
+
+    void OpenWalkCollisionWindow() {
+        if (collisionWindow == null) {
+            CollisionEditorWindow window = CollisionEditorWindow.CreateWindow(this);
+            collisionWindow = window;
+        }
+        collisionWindow.CurrentTile = CurrentTile;
+        collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.WalkCollider);
+    }
+
+    Vector2 layerScrollPos = new Vector2(0,0);
 	void DrawLayerEditor () {
-		EditorGUILayout.LabelField ("Main Layers");
+		//GUILayout.BeginArea(new Rect(0, 0, boxWidth, 120));
+        EditorGUILayout.LabelField ("Main Layers");
+        EditorGUILayout.BeginScrollView(layerScrollPos, GUILayout.Width(boxWidth - 10), GUILayout.Height(100));
 		if (layersDisplayed != data.layers) {
-			UpdateTile ();
+            UpdateTile ();
 			string[] newLayers = new string[data.layers.Count];
 			data.layers.CopyTo (newLayers);
 			layersDisplayed = newLayers.ToList ();
 		}
 		SelectedLayerIndex = GUILayout.SelectionGrid (SelectedLayerIndex, layersDisplayed.ToArray (), 1, GUILayout.MaxWidth (boxWidth));
+        EditorGUILayout.EndScrollView();
+        //GUILayout.EndArea();
 		EditorGUILayout.LabelField ("Sub-Layer (Can be ANY integer value)");
 		SublayerIndex = EditorGUILayout.IntField (SublayerIndex);
 
-        CurrentTile.BaseLayerName = data.GetLayerName(SelectedLayerIndex);
-        CurrentTile.SubLayer = SublayerIndex;
-        CurrentTile.ForceUpdateTile(data);
+        TileHelper.LayerIndex = SelectedLayerIndex;
+        TileHelper.SublayerIndex = SublayerIndex;
+        TileHelper.data = data;
 	}
 
 	void DrawCollisionEditor() {
+        /*
 		EditorGUILayout.Space();
 		EditorGUILayout.LabelField("Tile Collision");
         
@@ -250,6 +312,7 @@ public class TileWindow : EditorWindow {
         EditorGUILayout.LabelField("Is Trigger?");
         coll.isTrigger = EditorGUILayout.Toggle(coll.isTrigger);
         EditorGUILayout.EndHorizontal();
+        */
     }
 
     void DrawNullTileEditor() {
@@ -419,7 +482,10 @@ public class TileWindow : EditorWindow {
 	void OnDestroy() {
 		PlayerPrefs.SetString("TextureSelectionBackgroundColor", m_Utility.ColorUtil.GetParsableString(TextureSelectionColor));
 		PlayerPrefs.Save();
-	}
+
+        if (collisionWindow != null)
+            collisionWindow.Close();
+    }
 
 	public GameObject GetSelectedTile() {
 		return CurrentTile.gameObject;

@@ -9,8 +9,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 471050}
   - 212: {fileID: 21290060}
-  - 60: {fileID: 6040330}
-  - 50: {fileID: 5043320}
+  - 54: {fileID: 5411612}
   - 114: {fileID: 11443560}
   - 114: {fileID: 11492090}
   - 114: {fileID: 11470468}
@@ -23,7 +22,9 @@ GameObject:
   - 114: {fileID: 11430662}
   - 114: {fileID: 11474902}
   - 114: {fileID: 11493272}
-  m_Layer: 0
+  - 114: {fileID: 11482432}
+  - 65: {fileID: 6570360}
+  m_Layer: 14
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,45 +43,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!50 &5043320
-Rigidbody2D:
-  serializedVersion: 2
+--- !u!54 &5411612
+Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 165650}
-  m_UseAutoMass: 0
-  m_Mass: 5
-  m_LinearDrag: 0
+  serializedVersion: 2
+  m_Mass: 50
+  m_Drag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_SleepingMode: 0
-  m_CollisionDetection: 1
-  m_Constraints: 4
---- !u!60 &6040330
-PolygonCollider2D:
+  m_Constraints: 48
+  m_CollisionDetection: 2
+--- !u!65 &6570360
+BoxCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 165650}
-  m_Enabled: 1
-  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_Offset: {x: 0, y: 0}
-  m_Points:
-    m_Paths:
-    - - {x: -0.028934347, y: 0.07004873}
-      - {x: -0.0709296, y: 0.029208507}
-      - {x: -0.069882534, y: -0.028013501}
-      - {x: -0.020058319, y: -0.06890332}
-      - {x: 0.020184498, y: -0.068737}
-      - {x: 0.0693437, y: -0.019029457}
-      - {x: 0.06917739, y: 0.019177377}
-      - {x: 0.028346028, y: 0.06944207}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.14, y: 0.14, z: 0.1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &11402542
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -138,6 +127,8 @@ MonoBehaviour:
   dodge: {fileID: 0}
   sneak: {fileID: 0}
   inventory: {fileID: 0}
+  zMovement: {fileID: 0}
+  SpriteRenderer: {fileID: 0}
   controller: {fileID: 0}
   input: {fileID: 0}
 --- !u!114 &11447128
@@ -191,7 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc6ac3debb212834d8ff80e619602b16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 200
+  MoveSpeed: 3
   MoveVector: {x: 0, y: 0, z: 0}
   MoveVectorLastFrame: {x: 0, y: 0, z: 0}
   body: {fileID: 0}
@@ -224,6 +215,17 @@ MonoBehaviour:
   StaminaRegenDelayFromOverExertion: 2
   PercentOfDelayBeforeRegen: 0.5
   CurrentRegenStatus: 0
+--- !u!114 &11482432
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 165650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c14f88e61735b034d8245b136cceaeb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11492090
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -281,8 +283,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -1126652615
-  m_SortingOrder: 0
+  m_SortingLayerID: 904673745
+  m_SortingOrder: 5
   m_Sprite: {fileID: 21300000, guid: 9c66adf107a31c14b815e8873258783d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

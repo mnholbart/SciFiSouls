@@ -9,12 +9,10 @@ public class Health : ActivitySystem {
     public int MaxHealth = 100;
     private int _CurrentHealth;
     public int CurrentHealth { get { return _CurrentHealth; } private set { _CurrentHealth = value; isDirty = true; } }
-
-    Entity entity;
+    
     Die die;
 
     new void Start() {
-        entity = GetComponent<Entity>();
         die = entity.die;
 
         FullHeal();

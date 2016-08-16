@@ -9,9 +9,13 @@ public abstract class AttackBase : MonoBehaviour {
         public Vector3 mousePosition;
         public Vector3 entityVelocity;
         public WeaponData myWeapon;
+
+        public int LayerIndex;
+        public int SubLayerIndex;
     }
 
     public abstract void Shoot(AttackData data);
     public abstract void Aim(AttackData data);
 
+    public abstract void SetLayers(GameObject g, AttackData d);
 }

@@ -18,9 +18,16 @@ public class Gun2 : AttackBase {
         p.SetStartPosition(data.entityPosition);
         p.duration = p.startDuration = data.myWeapon.Duration;
         p.SetRotation(data.targetDegreeRotation + data.myWeapon.SpriteRotations[i]);
+        SetLayers(g, data);
         g.SetActive(true);
 
         StartCoroutine(FadeAttack(p));
+    }
+
+    public override void SetLayers(GameObject g, AttackData d) {
+        SpriteRenderer sr = g.GetComponent<SpriteRenderer>();
+        sr.sortingLayerID = d.LayerIndex;
+        sr.sortingOrder = d.SubLayerIndex;
     }
 
     IEnumerator FadeAttack(StaticAttack g) {

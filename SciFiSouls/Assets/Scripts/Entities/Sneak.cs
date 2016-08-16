@@ -5,12 +5,10 @@ using System;
 public class Sneak : ActivitySystem {
 
     public bool sneaking = false;
-
-    Entity entity;
+    
     Sprint sprint;
 
     new void Awake() {
-        entity = GetComponent<Entity>();
 
         base.Awake();
     }

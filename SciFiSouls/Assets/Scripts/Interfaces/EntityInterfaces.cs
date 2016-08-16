@@ -26,3 +26,12 @@ public interface IDestructable {
     void Damage(int amount);
     void DamageStructuralIntegrity(DestructionPhase phase);
 }
+
+public interface ISprite {
+    void ChangeSprite(Sprite s);
+}
+
+public interface IChangeZHeight {
+    void GoUpToHeight(float height, int floor);
+    void GoDownToHeight(float height, int floor);
+}

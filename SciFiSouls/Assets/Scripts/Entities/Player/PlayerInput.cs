@@ -11,6 +11,7 @@ public class PlayerInput : ActivitySystem {
     Sneak sneak;
     Shoot shoot;
     Inventory inventory;
+    ZMovement zMovement;
 
     new void Start() {
         player = GetComponent<Player>();
@@ -20,6 +21,7 @@ public class PlayerInput : ActivitySystem {
         sneak = player.sneak;
         shoot = player.shoot;
         inventory = player.inventory;
+        zMovement = player.zMovement;
 
         base.Start();
     }
@@ -37,8 +39,18 @@ public class PlayerInput : ActivitySystem {
         if (inventory)
             InventoryInput();
 
+        if (zMovement)
+            zMovementInput();
+
         base.Update();
 	}
+
+    void zMovementInput() {
+        if (Input.GetKeyDown(KeyCode.T))
+            zMovement.GoUpToHeight(-1f, 2);
+        if (Input.GetKeyDown(KeyCode.Y))
+            zMovement.GoDownToHeight(0f, 1);
+    }
 
     void InventoryInput() {
         int switchEquipped = -1;

@@ -6,7 +6,10 @@ public abstract class ActivitySystem : MonoBehaviour {
 
     public delegate bool CanRunTask_Delegate();
 
+    protected Entity entity;
+
     protected void Awake() {
+        entity = GetComponent<Entity>();
         AddTasks();
         AddTaskRestrictions();
         AddActivities();
@@ -30,16 +33,27 @@ public abstract class ActivitySystem : MonoBehaviour {
     public delegate void Task();
 
     public void AddTask(Task task) {
+        AddTask(task, false);
+    }
+
+    public void AddTask(Task task, bool lateUpdate) {
         DictionaryValue<Task> newEntry = new DictionaryValue<Task>();
         newEntry.OnFailDelegates = null;
         newEntry.restrictions = null;
         newEntry.OnSuccessDelegates = null;
 
-        tasks.Add(task, newEntry);
+        if (lateUpdate)
+            lateUpdateTasks.Add(task, newEntry);
+        else
+            updateTasks.Add(task, newEntry);
     }
 
     public void Update() {
-        RunTasks();
+        RunTasks(updateTasks);
+    }
+
+    public void FixedUpdate() {
+        RunTasks(lateUpdateTasks);
     }
 
     /// <summary>
@@ -51,9 +65,10 @@ public abstract class ActivitySystem : MonoBehaviour {
         public T OnSuccessDelegates;
     }
 
-    Dictionary<Task, DictionaryValue<Task>> tasks = new Dictionary<Task, DictionaryValue<Task>>(); 
+    Dictionary<Task, DictionaryValue<Task>> updateTasks = new Dictionary<Task, DictionaryValue<Task>>(); 
+    Dictionary<Task, DictionaryValue<Task>> lateUpdateTasks = new Dictionary<Task, DictionaryValue<Task>>();
 
-    void RunTasks() {
+    void RunTasks(Dictionary<Task, DictionaryValue<Task>> tasks) {
         if (tasks.Count == 0)
             return;
 
@@ -77,7 +92,9 @@ public abstract class ActivitySystem : MonoBehaviour {
 
     public void Add_CanRunTask_Function(Task t, CanRunTask_Delegate d, bool debug = false) {
         DictionaryValue<Task> e;
-        tasks.TryGetValue(t, out e);
+        updateTasks.TryGetValue(t, out e);
+        if (e == null)
+            lateUpdateTasks.TryGetValue(t, out e);
         if (debug)
             Debug.Log(e);
         if (e != null) {
@@ -89,14 +106,18 @@ public abstract class ActivitySystem : MonoBehaviour {
 
     public void Add_OnFailTask_Function(Task t, Task f) {
         DictionaryValue<Task> e;
-        tasks.TryGetValue(t, out e);
+        updateTasks.TryGetValue(t, out e);
+        if (e == null)
+            lateUpdateTasks.TryGetValue(t, out e);
         if (e != null)
             e.OnFailDelegates += f;
     }
 
     public void Add_OnSuccessTask_Function(Task t, Task f) {
         DictionaryValue<Task> e;
-        tasks.TryGetValue(t, out e);
+        updateTasks.TryGetValue(t, out e);
+        if (e == null)
+            lateUpdateTasks.TryGetValue(t, out e);
         if (e != null)
             e.OnSuccessDelegates += f;
     }

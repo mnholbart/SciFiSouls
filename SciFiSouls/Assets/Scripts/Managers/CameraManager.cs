@@ -11,15 +11,21 @@ public class CameraManager : MonoBehaviour {
             Destroy(instance);
         }
         instance = this;
+
+        Camera.main.transparencySortMode = TransparencySortMode.Orthographic;
     }
 
     void Update () {
 		TrackPlayer();
 	}
 
+    void start() {
+
+    }
+
 	void TrackPlayer() {
 		Vector3 pos = PlayerManager.instance.Player.transform.position;
-		pos.z = -4;
-		Camera.main.transform.position = pos;
-	}
+		pos.z = -4 + PlayerManager.instance.Player.transform.position.z;
+        Camera.main.transform.position = pos;
+    }
 }

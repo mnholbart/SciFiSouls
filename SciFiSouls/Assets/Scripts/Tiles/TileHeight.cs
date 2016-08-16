@@ -15,21 +15,25 @@ public class TileHeight : MonoBehaviour, IHeightCollider {
     }
 
     void CopyCollider() {
-        switch ((int)MyTile.CollisionType) {
+        switch ((int)MyTile.MyColliderData.data.CurrentColliderType) {
             case 0: return;
-            case 1: gameObject.AddComponent<BoxCollider2D>().GetCopyOf<BoxCollider2D>(transform.parent.GetComponent<BoxCollider2D>()); break;
-            case 2: gameObject.AddComponent<CircleCollider2D>().GetCopyOf<CircleCollider2D>(transform.parent.GetComponent<CircleCollider2D>()); break;
-            case 3: gameObject.AddComponent<EdgeCollider2D>().GetCopyOf<EdgeCollider2D>(transform.parent.GetComponent<EdgeCollider2D>()); break;
-            case 4: gameObject.AddComponent<PolygonCollider2D>().GetCopyOf<PolygonCollider2D>(transform.parent.GetComponent<PolygonCollider2D>()); break;
+            case 1: gameObject.AddComponent<BoxCollider>().GetCopyOf<BoxCollider>(transform.parent.GetComponent<BoxCollider>()); break;
+            case 2: gameObject.AddComponent<CapsuleCollider>().GetCopyOf<CapsuleCollider>(transform.parent.GetComponent<CapsuleCollider>()); break;
+            case 3: gameObject.AddComponent<MeshCollider>().GetCopyOf<MeshCollider>(transform.parent.GetComponent<MeshCollider>()); break;
             default: return;
         }
-        Collider2D c = GetComponent<Collider2D>();
+        Collider c = GetComponent<Collider>();
         if (c == null)
             Debug.LogError("Failed to copy tile parent collider");
-        c.isTrigger = true;
+        if (c is MeshCollider) {
+            MeshCollider mc = (MeshCollider)c;
+            mc.convex = true;
+            mc.isTrigger = true;
+        } else 
+            c.isTrigger = true;
         gameObject.layer = LayerMask.NameToLayer("HeightBoxes");
 
-        gameObject.AddComponent<Rigidbody2D>();
+        gameObject.AddComponent<Rigidbody>();
     }
 
     public bool PassedHeightCheck() {

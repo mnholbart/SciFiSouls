@@ -21,7 +21,7 @@ public class TileHelperEditor : Editor {
 		GUILayout.EndHorizontal();
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Snap To Grid Enabled", GUILayout.MaxWidth(200));
-		GridTarget.SnapEnabled = EditorGUILayout.Toggle(GridTarget.SnapEnabled);
+		TileHelper.GridSnapEnabled = EditorGUILayout.Toggle(TileHelper.GridSnapEnabled);
 		GUILayout.EndHorizontal();
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Grid Color");

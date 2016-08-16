@@ -5,29 +5,17 @@ using System;
 public class Die : ActivitySystem {
 
     public bool dead = false;
-
-    Entity entity;
-    Sprint sprint;
-    Stamina stamina;
-    Movement movement;
-    Dodge dodge;
-    Shoot shoot;
+    
+    Sprint sprint {  get { return entity.sprint; } }
+    Stamina stamina {  get { return entity.stamina; } }
+    Movement movement { get { return entity.movement; } }
+    Dodge dodge { get { return entity.dodge; } }
+    Shoot shoot { get { return entity.shoot; } }
+    Inventory inventory { get { return entity.inventory; } }
     PlayerController controller;
-    Inventory inventory;
-    new void Awake() {
-        entity = GetComponent<Entity>();
 
-        base.Awake();
-    }
 
     new void Start() {
-        stamina = entity.stamina;
-        sprint = entity.sprint;
-        movement = entity.movement;
-        dodge = entity.dodge;
-        shoot = entity.shoot;
-        inventory = entity.inventory;
-
         if (entity is Player)
             controller = ((Player)entity).controller;
 

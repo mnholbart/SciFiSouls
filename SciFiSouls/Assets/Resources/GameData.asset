@@ -12,5 +12,13 @@ MonoBehaviour:
   m_Name: GameData
   m_EditorClassIdentifier: 
   layers:
-  - New Layer1
-  - New Layer5
+  - Floor1
+  - Floor1Float
+  - Floor2
+  - Floor2Float
+  - Floor3
+  - Floor3Float
+  - Floor4
+  - Floor4Float
+  - Floor5
+  - Floor5Float

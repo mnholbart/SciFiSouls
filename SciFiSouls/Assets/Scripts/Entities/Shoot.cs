@@ -4,18 +4,16 @@ using System;
 
 [RequireComponent(typeof(Inventory))]
 public class Shoot : ActivitySystem {
-
-    Entity entity;
+    
     Inventory inventory;
 
     new void Awake() {
-        entity = GetComponent<Entity>();
-        inventory = entity.inventory;
 
         base.Awake();
     }
 
     new void Start() {
+        inventory = entity.inventory;
         base.Start();
     }
 

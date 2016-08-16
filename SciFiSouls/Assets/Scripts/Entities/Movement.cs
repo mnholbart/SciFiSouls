@@ -2,15 +2,13 @@
 using System.Collections;
 using System;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public class Movement : ActivitySystem {
 
     public float MoveSpeed = 40;
     public Vector3 MoveVector;
     public Vector3 MoveVectorLastFrame;
-
-    Entity entity;
-    public Rigidbody2D body;
+    
+    public Rigidbody body;
     Sprint sprint;
     Sneak sneak;
 
@@ -23,6 +21,7 @@ public class Movement : ActivitySystem {
 
     new void Awake() {
         entity = GetComponent<Entity>();
+        body = GetComponent<Rigidbody>();
 
         base.Awake();
     }
@@ -30,7 +29,6 @@ public class Movement : ActivitySystem {
     new void Start() {
         sprint = entity.sprint;
         sneak = entity.sneak;
-        body = GetComponent<Rigidbody2D>();
 
         base.Start();
     }
@@ -39,9 +37,9 @@ public class Movement : ActivitySystem {
     public void Task_Move() {
         CurrMovementType = MovementType.Walk;
         MoveVector.Normalize();
-        MoveVector.x *= MoveSpeed * Time.deltaTime;
-        MoveVector.y *= MoveSpeed * Time.deltaTime;
-        
+        MoveVector.x *= MoveSpeed;
+        MoveVector.y *= MoveSpeed;
+
         if (sprint && sprint.sprinting) {
             CurrMovementType = MovementType.Run;
             MoveVector.x *= 1.5f;
@@ -51,10 +49,17 @@ public class Movement : ActivitySystem {
             MoveVector.x *= .5f;
             MoveVector.y *= .5f;
         }
+        MoveVector.z = body.velocity.z;
 
         body.velocity = MoveVector;
         MoveVectorLastFrame = MoveVector;
     }
+
+    public void SetPosition(Vector3 position) {
+        body.velocity = Vector3.zero;
+        transform.position = position;
+    }
+
 
     public bool MovedLastFrame() {
         return MoveVectorLastFrame != Vector3.zero;
@@ -92,7 +97,7 @@ public class Movement : ActivitySystem {
     }
 
     protected override void AddTasks() {
-        AddTask(Task_Move);
+        AddTask(Task_Move, true);
     }
 
     protected override void AddActivityRestrictions() {
