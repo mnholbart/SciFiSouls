@@ -21,9 +21,10 @@ public class Gun1 : AttackBase, IHeightCallbacks {
         p.maxRange = data.myWeapon.Range;
         p.SetRotation(data.targetDegreeRotation + data.myWeapon.SpriteRotations[0]);
         g.transform.localScale = new Vector3(2, 2, 1);
-        BoxCollider2D box = g.GetComponent<BoxCollider2D>();
-        box.size = new Vector3(.02f, .04f);
-        box.offset = new Vector3(.01f, .02f);
+        CapsuleCollider box = g.GetComponent<CapsuleCollider>();
+        box.radius = .02f;
+        box.height = .1f;
+        box.center = new Vector3(0, .02f, 0);
         SetLayers(g, data);
         g.SetActive(true);
     }

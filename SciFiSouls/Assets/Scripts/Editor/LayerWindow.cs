@@ -80,7 +80,9 @@ public class LayerWindow : EditorWindow {
         }
 	}
 
+    Vector2 scroll = new Vector2(0, 0);
 	void DrawLayers() {
+        scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Width(position.width), GUILayout.Height(180));
 		EditorGUILayout.LabelField("Rendered First");
 		EditorGUI.indentLevel++;
 		for (int i = 0; i < data.layers.Count; i++) {
@@ -118,5 +120,6 @@ public class LayerWindow : EditorWindow {
 		}
 		EditorGUI.indentLevel--;
 		EditorGUILayout.LabelField("Rendered Last");
+        EditorGUILayout.EndScrollView();
 	}
 }

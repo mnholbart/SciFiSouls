@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Sprites;
 using UnityEditor;
 using UnityEditor.Sprites;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System;
+
+//TODO: still needs to support "generic" types based on SpriteBase rather than having all these object/tile/pipe modes, if done need to edit SpriteManager as well
+//TODO: still needs quite a bit of refactoring lots of inefficiencies, needs comments and or renaming on several ambiguous variables
 
 public class TileWindow : EditorWindow {
 	[MenuItem ("Editor/Tile Maker")]
@@ -16,35 +19,46 @@ public class TileWindow : EditorWindow {
 		window.Show();
 
 		window.data = (GameData)Resources.Load("GameData", typeof(GameData));
-		window.minSize = new Vector2(360, 500);
+		window.minSize = new Vector2(500, 600);
 		window.window = window;
-		//window.CurrentTile = (Tile)AssetDatabase.LoadAssetAtPath("Assets/Prefabs/TestTile.prefab", typeof(Tile));
 
 		window.LoadPlayerPrefs();
-		window.LoadTextureAtlases();
 		window.SetBackgroundTexture(window.TextureSelectionColor);
+        window.SetEditMode(EditMode.None);
 	}
 
-	GameData data;
+    public enum EditMode {
+        None,
+        Tile, 
+        Object,
+        Pipe
+    }
+    public EditMode CurrentEditMode = EditMode.None;
+    
+    Tile CurrentTile;
+    Pipe CurrentPipe;
+    SpriteObject CurrentObject;
+
+    List<SpriteDirectoryData> DirectoryData = new List<SpriteDirectoryData>();
+    SpriteDirectoryData CurrentDirectory;
+
+    GameData data;
 	TileWindow window;
-	Tile CurrentTile;
 
 	int SpriteSize = 16;
 	int PixelPadding = 2;
 	float SpriteScale = 2f;
 	float LastSpriteScale = 1f;
 	GUIStyle SelectionGridStyle;
-
-	int SelectedTextureIndex = 0;
+    
+    int SelectedTextureIndex = 0;
 	int SublayerIndex = 0;
 	int SelectedLayerIndex = 0;
-	List<Texture2D> DisplayedTextures = new List<Texture2D>();
-	List<Sprite> TextureAtlases = new List<Sprite>();
-	List<Texture2D> DisplayedTextureAtlases = new List<Texture2D>();
 	Sprite[] DisplayedSprites;
-	Texture2D SelectionTexture;
-	string[] AtlasPaths;
+    List<Texture2D> DisplayedSpriteTextures = new List<Texture2D>();
+    Texture2D SelectionTexture;
 	Sprite CurrentAtlas;
+    int CurrentAtlasIndex = -1;
 	public Vector2 ScrollPosition = Vector2.zero;
 	Texture2D TextureSelectionBackground;
 	Color TextureSelectionColor;
@@ -58,47 +72,46 @@ public class TileWindow : EditorWindow {
 
     CollisionEditorWindow collisionWindow;
 
+    public void SetEditMode(EditMode newMode) {
+        CurrentTile = null;
+        CurrentPipe = null;
+        CurrentObject = null;
+        CurrentDirectory = null;
+        DirectoryData.Clear();
+        DisplayedSpriteTextures.Clear();
+
+        if (newMode == EditMode.Pipe)
+            CurrentAssetPath = AssetPathPipes;
+        else if (newMode == EditMode.Tile)
+            CurrentAssetPath = AssetPathTiles;
+        else if (newMode == EditMode.Object) {
+            CurrentAssetPath = AssetPathObjects;
+        } else CurrentAssetPath = string.Empty;
+        CurrentEditMode = newMode;
+        
+        CurrentAtlas = null;
+        CurrentAtlasIndex = -1;
+        ScrollPosition = Vector2.zero;
+        SelectedTextureIndex = 0;
+
+        LoadTextureAtlases();
+    }
 
     void OnGUI () {
-		if (CurrentTile != null) {
-			DrawTileEditor();
-		} else {
-			DrawNullTileEditor();
-		}
+        if (CurrentEditMode == EditMode.None) {
 
-		if (SelectionGridStyle == null)
-			SetSelectionGridStyle();
+        } else if (CurrentEditMode == EditMode.Tile) {
+            DrawTileEditor();
+        } else if (CurrentEditMode == EditMode.Pipe) {
+            DrawPipeEditor();
+        } else if (CurrentEditMode == EditMode.Object) {
+            DrawObjectEditor();
+        }
+        DrawRightBox(); //TODO draw for diff selected types
 
-		boxWidth = (int)window.position.width/2;
-		boxHeight = (int)window.position.height/2;
+        UpdateWindow();
 
-		if (boxWidth != lastBoxWidth || boxHeight != lastBoxHeight) {
-			SetBackgroundTexture(TextureSelectionColor, true);
-		}
-
-		lastBoxWidth = boxWidth;
-		lastBoxHeight = boxHeight;
-
-		GUILayout.BeginArea(new Rect(0, boxHeight, window.position.width, 40));
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Scale", GUILayout.MaxWidth(35));
-		SpriteScale = EditorGUILayout.Slider(SpriteScale, 1f, 4f, GUILayout.MaxWidth(200));
-		EditorGUILayout.LabelField("Padding", GUILayout.MaxWidth(50));
-		PixelPadding = EditorGUILayout.IntSlider(PixelPadding, 2, 10, GUILayout.MaxWidth(200));
-		EditorGUILayout.EndHorizontal();
-		EditorGUILayout.BeginHorizontal();
-		if (DisplayedTextures.Count > 0 && GUILayout.Button("Back", GUILayout.MinWidth(100), GUILayout.MaxWidth(200))) {
-			GoToAtlasSelection();
-		}
-		EditorGUILayout.LabelField("Background Color", GUILayout.MaxWidth(120));
-		SetBackgroundTexture(EditorGUILayout.ColorField(TextureSelectionColor, GUILayout.MinWidth(100)));
-		EditorGUILayout.EndHorizontal();
-		GUILayout.EndArea();
-		GUILayout.BeginArea(new Rect(0, boxHeight + 40, window.position.width, window.position.height), TextureSelectionBackground);
-		ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, false, true, GUILayout.Height(boxHeight-40));
-		ShowSpriteThumbnails();
-		EditorGUILayout.EndScrollView();
-		GUILayout.EndArea();
+        DrawSelectionWindow();
 
         if (collisionWindow != null)
             collisionWindow.Repaint();
@@ -107,39 +120,171 @@ public class TileWindow : EditorWindow {
             EditorUtility.SetDirty(CurrentTile);
     }
 
+    void DrawSelectionWindow() {
+        GUILayout.BeginArea(new Rect(0, boxHeight, window.position.width, 40));
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Scale", GUILayout.MaxWidth(35));
+        SpriteScale = EditorGUILayout.Slider(SpriteScale, 1f, 4f, GUILayout.MaxWidth(200));
+        EditorGUILayout.LabelField("Padding", GUILayout.MaxWidth(50));
+        PixelPadding = EditorGUILayout.IntSlider(PixelPadding, 2, 10, GUILayout.MaxWidth(200));
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        if (CurrentEditMode != EditMode.None && GUILayout.Button("Back", GUILayout.MinWidth(100), GUILayout.MaxWidth(200))) {
+            SetEditMode(EditMode.None);
+        }
+        EditorGUILayout.LabelField("Background Color", GUILayout.MaxWidth(120));
+        SetBackgroundTexture(EditorGUILayout.ColorField(TextureSelectionColor, GUILayout.MinWidth(100)));
+        EditorGUILayout.EndHorizontal();
+        GUILayout.EndArea();
+        GUILayout.BeginArea(new Rect(0, boxHeight + 40, window.position.width, window.position.height), TextureSelectionBackground);
+        ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, false, true, GUILayout.Height(boxHeight - 40));
+        if (CurrentEditMode != EditMode.None)
+            DrawSelectionBox();
+        else DrawEditModeSelection();
+        EditorGUILayout.EndScrollView();
+        GUILayout.EndArea();
+
+    }
+
+    void UpdateWindow() {
+        if (SelectionGridStyle == null)
+            SetSelectionGridStyle();
+
+        boxWidth = (int)window.position.width / 2;
+        boxHeight = (int)window.position.height / 2;
+
+        if (boxWidth != lastBoxWidth || boxHeight != lastBoxHeight) {
+            SetBackgroundTexture(TextureSelectionColor, true);
+        }
+
+        lastBoxWidth = boxWidth;
+        lastBoxHeight = boxHeight;
+    }
+
     void SelectTile(int i) {
-        if (CurrentAtlas == null || DisplayedSprites.Count() <= 0)
+        if (CurrentAtlas == null || DisplayedSprites.Count() == 0)
             return;
 
+        TileHelper.data = data;
         Sprite s = DisplayedSprites[i];
         string tileName = s.name;
 
-        CurrentTile = SpriteManager.LoadTileInTileset(tileName, CurrentAtlas.name);
-        selectedTexture = DisplayedTextures[i];
-        //Debug.Log(CurrentTile);
-        if (CurrentTile == null) { 
-            return;
+        if (CurrentEditMode == EditMode.Tile) {
+            CurrentTile = SpriteManager.LoadTileInTileset<Tile>(tileName, CurrentAtlas.name);
+            TileHelper._instance.UpdateSelectedTile(CurrentTile == null ? null: CurrentTile.GetComponent<SpriteBase>());
+        } else if (CurrentEditMode == EditMode.Pipe) {
+            CurrentPipe = SpriteManager.LoadTileInTileset<Pipe>(tileName, CurrentAtlas.name);
+    		TileHelper._instance.UpdateSelectedTile(CurrentPipe == null ? null : CurrentPipe.GetComponent<SpriteBase>());
+        } else if (CurrentEditMode == EditMode.Object) {
+            CurrentObject = SpriteManager.LoadTileInTileset<SpriteObject>(tileName, CurrentAtlas.name);
+    		TileHelper._instance.UpdateSelectedTile(CurrentObject == null ? null : CurrentObject.GetComponent<SpriteBase>());
         }
-		TileHelper._instance.UpdateSelectedTile(CurrentTile.gameObject);
-		if (CurrentTile != null) {
-            //SelectedLayerIndex = 0;
-			///SublayerIndex = CurrentTile.SubLayer;
-		} else {
-			CurrentTile = null;
-            selectedTexture = null;
-			//SublayerIndex = 0;
-		}
-
 	}
-    public Texture2D selectedTexture;
 
 	void UpdateTile() {
 		SelectTile(SelectedTextureIndex);
 	}
 
+    void DrawObjectEditor() {
+        if (CurrentObject == null) {
+            DrawNullSelectionEditor();
+            return;
+        }
+
+        GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
+        leftScrollPos = EditorGUILayout.BeginScrollView(leftScrollPos, GUIStyle.none, GUIStyle.none, GUILayout.Width(boxWidth), GUILayout.Height(boxHeight));
+        EditorGUILayout.LabelField("Pipe Name: " + CurrentObject.name);
+        EditorGUILayout.LabelField("Pipe Default Parameters: ");
+        if (GUILayout.Button("Select Prefab")) {
+            Selection.activeObject = CurrentObject.gameObject;
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Destructable", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
+        CurrentObject.destructable = EditorGUILayout.Toggle(CurrentObject.destructable);
+        EditorGUILayout.EndHorizontal();
+        if (CurrentObject.destructable) {
+            TileDestructable destructable = CurrentObject.GetComponentInChildren<TileDestructable>();
+            EditorGUI.indentLevel++;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Health", GUILayout.MaxWidth(60));
+            CurrentObject.MaxHealth = EditorGUILayout.IntSlider(CurrentObject.MaxHealth, 1, 1000);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Destruction Phases");
+            EditorGUI.indentLevel++;
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width / 2), GUILayout.Height(Mathf.Min(120, destructable.phases.Count * 90)));
+            DrawDestructionPhases(destructable);
+            EditorGUILayout.EndScrollView();
+            EditorGUI.indentLevel--;
+            EditorGUI.indentLevel--;
+        }
+
+        if (GUILayout.Button("Edit Collider"))
+            OpenCollisionWindow();
+
+        if (GUILayout.Button("Edit Walk Collider"))
+            OpenWalkCollisionWindow();
+
+        DrawPipeConnectionEditor();
+
+        EditorGUILayout.EndScrollView();
+        GUILayout.EndArea();
+    }
+
+    void DrawPipeEditor() {
+        if (CurrentPipe == null) {
+            DrawNullSelectionEditor();
+            return;
+        }
+
+        GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
+        leftScrollPos = EditorGUILayout.BeginScrollView(leftScrollPos, GUIStyle.none, GUIStyle.none, GUILayout.Width(boxWidth), GUILayout.Height(boxHeight));
+        EditorGUILayout.LabelField("Pipe Name: " + CurrentPipe.name);
+        EditorGUILayout.LabelField("Pipe Default Parameters: ");
+        if (GUILayout.Button("Select Prefab")) {
+            Selection.activeObject = CurrentPipe.gameObject;
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Destructable", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
+        CurrentPipe.destructable = EditorGUILayout.Toggle(CurrentPipe.destructable);
+        EditorGUILayout.EndHorizontal();
+        if (CurrentPipe.destructable) {
+            TileDestructable destructable = CurrentPipe.GetComponentInChildren<TileDestructable>();
+            EditorGUI.indentLevel++;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Health", GUILayout.MaxWidth(60));
+            CurrentPipe.MaxHealth = EditorGUILayout.IntSlider(CurrentPipe.MaxHealth, 1, 1000);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Destruction Phases");
+            EditorGUI.indentLevel++;
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width / 2), GUILayout.Height(Mathf.Min(120, destructable.phases.Count * 90)));
+            DrawDestructionPhases(destructable);
+            EditorGUILayout.EndScrollView();
+            EditorGUI.indentLevel--;
+            EditorGUI.indentLevel--;
+        }
+
+        if (GUILayout.Button("Edit Collider"))
+            OpenCollisionWindow();
+
+        if (GUILayout.Button("Edit Walk Collider"))
+            OpenWalkCollisionWindow();
+
+        DrawPipeConnectionEditor();
+
+        EditorGUILayout.EndScrollView();
+        GUILayout.EndArea();
+    }
+
     Vector2 scrollPos = new Vector2(0, 0);
     Vector2 leftScrollPos = new Vector2(0, 0);
     void DrawTileEditor() {
+        if (CurrentTile == null) {
+            DrawNullSelectionEditor();
+            return;
+        }
+
         GUILayout.BeginArea(new Rect(0, 0, boxWidth, boxHeight));
         leftScrollPos = EditorGUILayout.BeginScrollView(leftScrollPos, GUIStyle.none, GUIStyle.none, GUILayout.Width(boxWidth), GUILayout.Height(boxHeight));
 		EditorGUILayout.LabelField("Tile Name: " + CurrentTile.name);
@@ -155,6 +300,13 @@ public class TileWindow : EditorWindow {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Walking Noise", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
         CurrentTile.WalkingNoiseType = (Tile.WalkingNoise)EditorGUILayout.EnumPopup(CurrentTile.WalkingNoiseType, GUILayout.MaxWidth(150));
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Is Wall");
+        bool temp = EditorGUILayout.Toggle(CurrentTile.isWall);
+        if (temp != CurrentTile.isWall)
+            CurrentTile.SetIsWall(temp);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -176,8 +328,7 @@ public class TileWindow : EditorWindow {
             EditorGUI.indentLevel--;
             EditorGUI.indentLevel--;
         }
-
-        DrawCollisionEditor();
+        
         if (GUILayout.Button("Edit Collider"))
             OpenCollisionWindow();
 
@@ -186,8 +337,6 @@ public class TileWindow : EditorWindow {
 
         EditorGUILayout.EndScrollView();
         GUILayout.EndArea();
-
-		DrawRightBox();
 	}
 
     void DrawDestructionPhases(TileDestructable d) {
@@ -227,6 +376,7 @@ public class TileWindow : EditorWindow {
 	void DrawRightBox() {
         GUILayout.BeginArea(new Rect(window.position.width/2f, 0, window.window.position.width/2f, window.window.position.height/2f));
         EditorGUILayout.LabelField("Tile Paste Settings");
+
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Grid Snap", GUILayout.MaxWidth(120));
         TileHelper.GridSnapEnabled = EditorGUILayout.Toggle(TileHelper.GridSnapEnabled);
@@ -244,16 +394,27 @@ public class TileWindow : EditorWindow {
             EditorGUILayout.EndHorizontal();
             EditorGUI.indentLevel--;
         }
+
+        if (CurrentTile == null && CurrentPipe == null && CurrentObject == null) {
+            GUILayout.EndArea();
+            return;
+        }
+
         DrawLayerEditor();
+
         GUILayout.EndArea();
 	}
+
+    void DrawPipeConnectionEditor() {
+
+    }
 
     void OpenCollisionWindow() {
         if (collisionWindow == null) {
             CollisionEditorWindow window = CollisionEditorWindow.CreateWindow(this);
             collisionWindow = window;
         }
-        collisionWindow.CurrentTile = CurrentTile;
+        collisionWindow.CurrentSprite = GetSelectedTile().GetComponent<SpriteBase>();
         collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.Collider);
     }
 
@@ -262,15 +423,15 @@ public class TileWindow : EditorWindow {
             CollisionEditorWindow window = CollisionEditorWindow.CreateWindow(this);
             collisionWindow = window;
         }
-        collisionWindow.CurrentTile = CurrentTile;
+        collisionWindow.CurrentSprite = GetSelectedTile().GetComponent<SpriteBase>();
         collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.WalkCollider);
     }
 
-    Vector2 layerScrollPos = new Vector2(0,0);
+    Vector2 layerScrollPos = Vector2.zero;
 	void DrawLayerEditor () {
 		//GUILayout.BeginArea(new Rect(0, 0, boxWidth, 120));
         EditorGUILayout.LabelField ("Main Layers");
-        EditorGUILayout.BeginScrollView(layerScrollPos, GUILayout.Width(boxWidth - 10), GUILayout.Height(100));
+        layerScrollPos = EditorGUILayout.BeginScrollView(layerScrollPos, GUILayout.Width(boxWidth - 10), GUILayout.Height(100));
 		if (layersDisplayed != data.layers) {
             UpdateTile ();
 			string[] newLayers = new string[data.layers.Count];
@@ -285,118 +446,189 @@ public class TileWindow : EditorWindow {
 
         TileHelper.LayerIndex = SelectedLayerIndex;
         TileHelper.SublayerIndex = SublayerIndex;
-        TileHelper.data = data;
 	}
 
-	void DrawCollisionEditor() {
-        /*
-		EditorGUILayout.Space();
-		EditorGUILayout.LabelField("Tile Collision");
-        
-        int oldType = (int)CurrentTile.CollisionType;
-        int newType = GUILayout.SelectionGrid(oldType, Tile.CollisionTypeStrings, 1);
-
-        if (oldType != newType)
-            CurrentTile.SetCollider(newType);
-
-        if (newType == 0)
-            return;
-
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Height", GUILayout.MinWidth(boxWidth / 2), GUILayout.MaxWidth(120));
-        CurrentTile.HitHeight = EditorGUILayout.Slider(CurrentTile.HitHeight, 0.0f, 1.0f);
-        EditorGUILayout.EndHorizontal();
-
-        Collider2D coll = CurrentTile.GetComponent<Collider2D>();
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Is Trigger?");
-        coll.isTrigger = EditorGUILayout.Toggle(coll.isTrigger);
-        EditorGUILayout.EndHorizontal();
-        */
-    }
-
-    void DrawNullTileEditor() {
+    void DrawNullSelectionEditor() {
 		GUILayout.BeginArea(new Rect(0, 0, window.position.width, boxHeight));
-		EditorGUILayout.LabelField("No Tile selected, select one below to edit tile");
+		EditorGUILayout.LabelField("Nothing selected, select something below to edit", GUILayout.MaxWidth(boxWidth));
 		GUILayout.EndArea();
 	}
 
-	void ShowSpriteThumbnails() {
+    void DrawEditModeSelection() {
+        if (GUILayout.Button("Tiles"))
+            SetEditMode(EditMode.Tile);
+        else if (GUILayout.Button("Pipes"))
+            SetEditMode(EditMode.Pipe);
+        else if (GUILayout.Button("Objects"))
+            SetEditMode(EditMode.Object);
+    }
+
+    void DrawSelectionBox() {
 		UpdateSelectionGridStyle();
+        DrawDirectorySelection();
+        UpdateTextureScale();
+        DrawAtlasSelection();
+        DrawSpriteSelection();
+    }
 
-		if (DisplayedTextures.Count > 0) {
-			if (LastSpriteScale != SpriteScale) {
-				int imageSize = Mathf.FloorToInt(SpriteSize * Mathf.Max(SpriteScale, 1));
-				LoadSpritesheets(imageSize, AtlasPaths[TextureAtlases.IndexOf(CurrentAtlas)]);
-				LastSpriteScale = SpriteScale;
-			}
-			int size = (int)SelectionGridStyle.CalcSize(new GUIContent(DisplayedTextures[0])).x;
-			int numColumns = Mathf.FloorToInt((window.position.width)/(size));
-			int newIndex = GUILayout.SelectionGrid(SelectedTextureIndex, DisplayedTextures.ToArray(), numColumns, SelectionGridStyle, GUILayout.MaxWidth(window.position.width - 20));
-			if (newIndex != SelectedTextureIndex) {
-				SelectedTextureIndex = newIndex;
-				SelectTile(SelectedTextureIndex);
-			}
-		} else if (TextureAtlases.Count > 0) {
-			if (LastSpriteScale != SpriteScale) {
-				LoadTextureAtlases();
-				LastSpriteScale = SpriteScale;
-			}
-			for (int i = 0; i < TextureAtlases.Count; i++) {
-				Sprite s = TextureAtlases[i];
-				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(s.name, GUILayout.MaxWidth(window.position.width/3f));
-				if (GUILayout.Button(DisplayedTextureAtlases[i], GUILayout.Width(window.position.width*(2f/3f) - 30))) {
-					CurrentAtlas = s;
-					ScrollPosition = Vector2.zero;
-					SelectedTextureIndex = 0;
-					LoadSpritesheets(Mathf.FloorToInt(SpriteSize * Mathf.Max(SpriteScale, 1)), AtlasPaths[i]);
-					SelectTile(0);
-				}
-				EditorGUILayout.EndHorizontal();
-			}
-		}
-	}
+    void DrawDirectorySelection() {
+        if (CurrentDirectory != null)
+            return;
 
-	void LoadTextureAtlases() {
-		TextureAtlases.Clear();
-		DisplayedTextureAtlases.Clear();
+        for (int i = 0; i < DirectoryData.Count; i++) {
+            if (GUILayout.Button(DirectoryData[i].DirectoryName)) {
+                CurrentDirectory = DirectoryData[i];
+            }
+        }
+    }
 
-		string[] paths = Directory.GetFiles(Application.dataPath + "/assets/tiles/", "*.png", SearchOption.AllDirectories);
-		List<string> validPaths = new List<string>();
+    void DrawSpriteSelection() {
+        if (CurrentAtlas == null || DisplayedSpriteTextures.Count == 0)
+            return;
 
-		for (int i = 0; i < paths.Length-1; i++) {
-			paths[i] = "Assets" + paths[i].Replace(Application.dataPath, "").Replace('\\', '/');
-			Sprite s = (Sprite)AssetDatabase.LoadAssetAtPath(paths[i], typeof(Sprite));
-			if (s is Sprite) {
-				SpriteScale /= 2;
-				Texture2D displayText = new Texture2D(s.texture.width, s.texture.height);
-				displayText.SetPixels(s.texture.GetPixels());
-				displayText.Apply();
+        int size = (int)SelectionGridStyle.CalcSize(new GUIContent(DisplayedSpriteTextures[0])).x;
+        int numColumns = Mathf.FloorToInt((window.position.width) / (size));
+        int newIndex = GUILayout.SelectionGrid(SelectedTextureIndex, DisplayedSpriteTextures.ToArray(), numColumns, SelectionGridStyle, GUILayout.MaxWidth(window.position.width - 20));
+        if (newIndex != SelectedTextureIndex) {
+            SelectedTextureIndex = newIndex;
+            SelectTile(SelectedTextureIndex);
+        }
+    }
 
-				TextureScale.Bilinear(displayText, (int)(s.texture.width*SpriteScale), (int)(s.texture.height*SpriteScale));
-				Color[] colors = displayText.GetPixels(0, 0, (int)(s.texture.width*SpriteScale), (int)(s.texture.height*SpriteScale));
-				displayText = new Texture2D((int)(s.texture.width*SpriteScale), (int)(s.texture.height*SpriteScale), TextureFormat.ARGB32, false);
-				displayText.SetPixels(colors);
-				displayText.Apply();
+    void DrawAtlasSelection() {
+        if (CurrentAtlas != null || CurrentDirectory == null || CurrentDirectory.sprites.Count == 0)
+            return;
 
-				DisplayedTextureAtlases.Add(displayText);
-				TextureAtlases.Add(s);
-				validPaths.Add(paths[i]);
-				SpriteScale *= 2;
-			}
-		}
-		AtlasPaths = validPaths.ToArray();
-		//Debug.Log("loaded " + DisplayedTextureAtlases.Count + " + atlases");
-	}
+        for (int i = 0; i < CurrentDirectory.sprites.Count; i++) {
+            Sprite s = CurrentDirectory.sprites[i];
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.LabelField(s.name, GUILayout.MaxWidth(window.position.width / 3f));
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Material", GUILayout.MaxWidth(80));
+            Material m = (Material)EditorGUILayout.ObjectField(null, typeof(Material), false);
+            if (m != null)
+                UpdateSpriteMaterials(s, m);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
+            if (GUILayout.Button(CurrentDirectory.DisplayTextures[i], GUILayout.Width(window.position.width * (2f / 3f) - 30))) {
+                CurrentAtlas = s;
+                CurrentAtlasIndex = i;
+                ScrollPosition = Vector2.zero;
+                SelectedTextureIndex = 0;
+                LoadSpritesheets();
+                SelectTile(0);
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+    
+    void UpdateSpriteMaterials(Sprite s, Material m) {
+        if (CurrentEditMode == EditMode.Tile)
+            SpriteManager.UpdateMaterial<Tile>(s, m);
+        else if (CurrentEditMode == EditMode.Pipe)
+            SpriteManager.UpdateMaterial<Pipe>(s, m);
+    }
 
-	void LoadSpritesheets(int size, string path) {
-		DisplayedSprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
-		DisplayedTextures.Clear();
+    const string AssetPathTiles = "/assets/Tiles/";
+    const string AssetPathPipes = "/assets/Pipes";
+    const string AssetPathObjects = "/assets/Objects";
+    string CurrentAssetPath;
 
-		for (int i = 0; i < DisplayedSprites.Length - 1; i++) {
+    /// <summary>
+    /// Clears and sets TextureAtlases, DisplayedTextureAtlases
+    /// Loads textures based on CurrentAssetPath
+    /// Saves all valid paths to AtlasPaths
+    /// Updates DisplayedTextureAtlases and TextureAtlases
+    /// </summary>
+    void LoadTextureAtlases() {
+        string path = CurrentAssetPath;
+        if (string.IsNullOrEmpty(path))
+            return;
+        
+        DirectoryData.Clear();
+
+        List<string> dirs = Directory.GetDirectories(Application.dataPath + path).ToList(); //Get all directories in Assets/assets/Tiles/
+        dirs.Insert(0, Application.dataPath + path);
+
+        for (int i = 0; i < dirs.Count; i++) { //Create new directory data for each directory
+            SpriteDirectoryData d = new SpriteDirectoryData();
+            d.DirectoryName = dirs[i].Replace(Application.dataPath + path, "");
+            d.DirectoryPath = dirs[i]; //Full directory path
+            d.SpritePaths = Directory.GetFiles(d.DirectoryPath, "*.png", SearchOption.TopDirectoryOnly);
+            RemoveNonSpritePaths(d);
+            //SpritePaths[0] == D:/Code/unity/SourceTree/ProjectTomato/SciFiSouls/Assets/assets/Objects\Doodads\objects_washroom_1x1_d.png
+            for (int j = 0; j < d.SpritePaths.Count(); j++)
+                GetDisplayTexturesAtPath(d, d.SpritePaths[j]);
+            DirectoryData.Add(d);
+        }
+        DirectoryData[0].DirectoryName = "\\";
+    }
+
+    void UpdateTextureScale() {
+        SpriteDirectoryData d = CurrentDirectory;
+        if (LastSpriteScale == SpriteScale || d == null)
+            return;
+        d.DisplayTextures.Clear();
+        d.sprites.Clear();
+        for (int i = 0; i < d.SpritePaths.Count(); i++) {
+            GetDisplayTexturesAtPath(d, d.SpritePaths[i]);
+        }
+        LoadSpritesheets();
+        LastSpriteScale = SpriteScale;
+    }
+
+    void RemoveNonSpritePaths(SpriteDirectoryData d) {
+        for (int i = 0; i < d.SpritePaths.Count(); i++) {
+            string path = "Assets" + d.SpritePaths[i].Replace(Application.dataPath, "").Replace('\\', '/');
+            Sprite s = (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
+            if (!(s is Sprite)) {
+                List<string> temp = d.SpritePaths.ToList();
+                temp.RemoveAt(i);
+                d.SpritePaths = temp.ToArray();
+                i--;
+            }
+        }
+    }
+
+    //Get a sprite at the directory path
+    void GetDisplayTexturesAtPath(SpriteDirectoryData data, string directoryPath) {
+        string path = "Assets" + directoryPath.Replace(Application.dataPath, "").Replace('\\', '/');
+        //path == Assets/assets/Objects/Doodads/objects_washroom_1x1_d.png
+        Sprite s = (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
+        if (s is Sprite) { //Ignore things like normal maps and load only sprites
+            SpriteScale /= 2;
+            Texture2D displayText = new Texture2D(s.texture.width, s.texture.height);
+            displayText.SetPixels(s.texture.GetPixels());
+            displayText.Apply();
+
+            TextureScale.Bilinear(displayText, (int)(s.texture.width * SpriteScale), (int)(s.texture.height * SpriteScale));
+            Color[] colors = displayText.GetPixels(0, 0, (int)(s.texture.width * SpriteScale), (int)(s.texture.height * SpriteScale));
+            displayText = new Texture2D((int)(s.texture.width * SpriteScale), (int)(s.texture.height * SpriteScale), TextureFormat.ARGB32, false);
+            displayText.SetPixels(colors);
+            displayText.Apply();
+            SpriteScale *= 2;
+
+            data.DisplayTextures.Add(displayText);
+            data.sprites.Add(s);
+        } 
+    }
+
+	void LoadSpritesheets() {
+        int index = CurrentAtlasIndex;
+
+        if (index < 0)
+            return;
+
+        string path = "Assets" + CurrentDirectory.SpritePaths[index].Replace("\\", "/").Replace(Application.dataPath, "");
+        DisplayedSprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
+        DisplayedSpriteTextures.Clear();
+
+        SpriteSize = Mathf.RoundToInt(DisplayedSprites[0].rect.width);
+        int size = Mathf.FloorToInt(SpriteSize * Mathf.Max(SpriteScale, 1));
+
+        for (int i = 0; i < DisplayedSprites.Length; i++) {
 			Sprite s = DisplayedSprites[i];
-			//Debug.Log(s.name);
 			Color[] colors = s.texture.GetPixels((int)s.rect.x, (int)s.rect.y, (int)s.rect.width, (int)s.rect.height);
 			Texture2D t = new Texture2D((int)s.rect.width, (int)s.rect.height, TextureFormat.ARGB32, false);
 			t.SetPixels(colors);
@@ -408,7 +640,7 @@ public class TileWindow : EditorWindow {
 			t.SetPixels(pix);
 			t.Apply();
 
-			DisplayedTextures.Add(t);
+            DisplayedSpriteTextures.Add(t);
 		}
 
 		SelectionTexture = new Texture2D(size, size);
@@ -449,14 +681,6 @@ public class TileWindow : EditorWindow {
 		SelectionGridStyle.contentOffset = new Vector2(PixelPadding/2f, PixelPadding/2f);
 	}
 
-	void GoToAtlasSelection() {
-		DisplayedTextures.Clear();
-		CurrentAtlas = null;
-		ScrollPosition = Vector2.zero;
-		SelectedTextureIndex = 0;
-		LoadTextureAtlases();
-	}
-
 	void SetBackgroundTexture(Color c, bool forceUpdate = false) {
 		if (TempTextureSelectionColor == c && !forceUpdate) {
 			return;
@@ -488,6 +712,16 @@ public class TileWindow : EditorWindow {
     }
 
 	public GameObject GetSelectedTile() {
-		return CurrentTile.gameObject;
-	}
+        if (CurrentEditMode == EditMode.Tile)
+            return CurrentTile != null ? CurrentTile.gameObject : null;
+        else if (CurrentEditMode == EditMode.Pipe)
+            return CurrentPipe != null ? CurrentPipe.gameObject : null;
+        else if (CurrentEditMode == EditMode.Object)
+            return CurrentObject != null ? CurrentObject.gameObject : null;
+        return null;
+    }
+
+    public Texture2D GetSelectedTileTexture() {
+        return DisplayedSpriteTextures[SelectedTextureIndex];
+    }
 }

@@ -38,20 +38,20 @@ public class CollisionEditorWindow : EditorWindow {
     public EditMode CurrentEditMode = EditMode.Collider;
     ColliderData.Data CurrentData;
 
-    public Tile CurrentTile = null;
+    public SpriteBase CurrentSprite = null;
 
     void OnGUI() {
         EditorUtilities.CreateStyles();
         GameObject g = tileWindow.GetSelectedTile();
-        if (tileWindow == null || g == null || tileWindow.selectedTexture == null) {
-            CurrentTile = null;
+        if (tileWindow == null || g == null) {
+            CurrentSprite = null;
             return;
         }
-        CurrentTile = tileWindow.GetSelectedTile().GetComponent<Tile>();
+        CurrentSprite = tileWindow.GetSelectedTile().GetComponent<SpriteBase>();
         if (CurrentEditMode == EditMode.Collider) {
-            CurrentData = CurrentTile.MyColliderData.data;
+            CurrentData = CurrentSprite.MyColliderData.data;
         } else if (CurrentEditMode == EditMode.WalkCollider) {
-            CurrentData = CurrentTile.MyColliderData.moveData;
+            CurrentData = CurrentSprite.MyColliderData.moveData;
         }
 
         DrawToolbar();
@@ -61,7 +61,7 @@ public class CollisionEditorWindow : EditorWindow {
     }
 
     void DrawCollisionEditor(Rect r) {
-        ColliderData data = CurrentTile.MyColliderData;
+        ColliderData data = CurrentSprite.MyColliderData;
         Vector2[] points = CurrentData.points;
         float closestDistanceSq = Mathf.Infinity;
 
@@ -141,8 +141,8 @@ public class CollisionEditorWindow : EditorWindow {
             v.x = Mathf.Round(v.x * 2) / 2.0f; 
             v.y = Mathf.Round(v.y * 2) / 2.0f;
 
-            v.x = Mathf.Clamp(v.x, 0.0f, CurrentTile.SpriteWidth);
-            v.y = Mathf.Clamp(v.y, 0.0f, CurrentTile.SpriteHeight);
+            v.x = Mathf.Clamp(v.x, 0.0f, CurrentSprite.SpriteWidth);
+            v.y = Mathf.Clamp(v.y, 0.0f, CurrentSprite.SpriteHeight);
 
             CurrentData.points[i] = v;
         }
@@ -156,8 +156,8 @@ public class CollisionEditorWindow : EditorWindow {
 
     void GenerateNewPoints(ColliderData data) {
         Vector2[] points = new Vector2[4];
-        int w = CurrentTile.SpriteWidth;
-        int h = CurrentTile.SpriteHeight;
+        int w = CurrentSprite.SpriteWidth;
+        int h = CurrentSprite.SpriteHeight;
 
         points = new Vector2[4];
         points[0] = new Vector2(0, 0);
@@ -183,9 +183,9 @@ public class CollisionEditorWindow : EditorWindow {
         }
         if (GUILayout.Button("Apply Changes")) {
             if (CurrentEditMode == EditMode.Collider)
-                CurrentTile.UpdateCollision();
+                CurrentSprite.UpdateCollision();
             if (CurrentEditMode == EditMode.WalkCollider)
-                CurrentTile.UpdateWalkCollision();
+                CurrentSprite.UpdateWalkCollision();
 
         }
         GUILayout.EndHorizontal();
@@ -214,17 +214,20 @@ public class CollisionEditorWindow : EditorWindow {
         if (CurrentEditMode == EditMode.Collider) {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Height", GUILayout.MaxWidth(60));
-            CurrentTile.HitHeight = EditorGUILayout.Slider(CurrentTile.HitHeight, 0.0f, 1.0f);
+            CurrentSprite.HitHeight = EditorGUILayout.Slider(CurrentSprite.HitHeight, 0.0f, 1.0f);
             EditorGUILayout.EndHorizontal();
-            Collider2D coll = CurrentTile.GetComponent<Collider2D>();
+            Collider coll = CurrentSprite.GetComponent<Collider>();
             if (coll != null) {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Is Trigger?", GUILayout.MaxWidth(80));
                 coll.isTrigger = EditorGUILayout.Toggle(coll.isTrigger);
                 EditorGUILayout.EndHorizontal();
             }
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Collider Depth", GUILayout.MaxWidth(90));
+            CurrentData.ColliderDepth = EditorGUILayout.Slider(CurrentData.ColliderDepth, 0.1f, 2.0f);
+            EditorGUILayout.EndHorizontal();
         }
-
         GUILayout.EndArea();
     }
 
@@ -245,7 +248,6 @@ public class CollisionEditorWindow : EditorWindow {
             EditorGUILayout.LabelField("Center: " + CurrentData.cylinderCenter.ToString());
             EditorGUILayout.LabelField("Radius: " + CurrentData.radius);
         } else if (CurrentData.CurrentColliderType == ColliderData.ColliderTypes.Box) {
-            ColliderData data = CurrentTile.MyColliderData;
             EditorGUILayout.LabelField("X1: " + CurrentData.boxBoundsX.x + " X2: " + CurrentData.boxBoundsX.y);
             EditorGUILayout.LabelField("Y1: " + CurrentData.boxBoundsY.x + " Y2: " + CurrentData.boxBoundsY.y);
         }
@@ -259,7 +261,7 @@ public class CollisionEditorWindow : EditorWindow {
         Rect rect = new Rect(0, 0, position.width/2, position.height);
         GUI.DrawTextureWithTexCoords(rect, gridTexture, new Rect(-offset.x / textureSize, (offset.y - rect.height) / textureSize, rect.width / textureSize, rect.height / textureSize), false);
         Rect origin = new Rect(10, 10, 0, 0);
-        GUI.DrawTexture(new Rect(origin.x, origin.y, CurrentTile.SpriteWidth, CurrentTile.SpriteWidth), tileWindow.selectedTexture, ScaleMode.ScaleAndCrop, true);
+        GUI.DrawTexture(new Rect(origin.x, origin.y, CurrentSprite.SpriteWidth, CurrentSprite.SpriteWidth), tileWindow.GetSelectedTileTexture(), ScaleMode.ScaleAndCrop, true);
 
         switch (CurrentData.CurrentColliderType) {
             case ColliderData.ColliderTypes.Box: DrawBoxCollider(origin); break;
@@ -274,7 +276,7 @@ public class CollisionEditorWindow : EditorWindow {
         Vector2 origin = new Vector2(r.x, r.y);
 
         if (!CurrentData.isValidCylinder()) {
-            CurrentData.cylinderCenter = new Vector3(CurrentTile.SpriteWidth / 2, CurrentTile.SpriteHeight / 2, 0);
+            CurrentData.cylinderCenter = new Vector3(CurrentSprite.SpriteWidth / 2, CurrentSprite.SpriteHeight / 2, 0);
             CurrentData.radius = 1;
         }
 
@@ -300,8 +302,8 @@ public class CollisionEditorWindow : EditorWindow {
         CurrentData.cylinderCenter.y = Mathf.Round(CurrentData.cylinderCenter.y);
         CurrentData.radius = Mathf.Round(CurrentData.radius);
 
-        CurrentData.cylinderCenter.x = Mathf.Clamp(CurrentData.cylinderCenter.x, 0.0f, CurrentTile.SpriteWidth);
-        CurrentData.cylinderCenter.y = Mathf.Clamp(CurrentData.cylinderCenter.y, 0.0f, CurrentTile.SpriteHeight);
+        CurrentData.cylinderCenter.x = Mathf.Clamp(CurrentData.cylinderCenter.x, 0.0f, CurrentSprite.SpriteWidth);
+        CurrentData.cylinderCenter.y = Mathf.Clamp(CurrentData.cylinderCenter.y, 0.0f, CurrentSprite.SpriteHeight);
         CurrentData.radius = Mathf.Clamp(CurrentData.radius, 1, CurrentData.SpriteWidth / 2);
         CurrentData.cylinderCenter.z = 0;
 
@@ -311,11 +313,9 @@ public class CollisionEditorWindow : EditorWindow {
 
     void DrawBoxCollider(Rect r) {
         Vector2 origin = new Vector2(r.x, r.y);
-        ColliderData data = CurrentTile.MyColliderData;
-
         if (!CurrentData.isValidBox()) {
-            CurrentData.boxBoundsX.y = CurrentTile.SpriteWidth;
-            CurrentData.boxBoundsY.y = CurrentTile.SpriteHeight;
+            CurrentData.boxBoundsX.y = CurrentSprite.SpriteWidth;
+            CurrentData.boxBoundsY.y = CurrentSprite.SpriteHeight;
         }
 
         Vector3[] pt = new Vector3[] {
@@ -363,10 +363,10 @@ public class CollisionEditorWindow : EditorWindow {
         CurrentData.boxBoundsY.y = Mathf.Round(CurrentData.boxBoundsY.y);
 
         // constrain
-        CurrentData.boxBoundsX.x = Mathf.Clamp(CurrentData.boxBoundsX.x, 0.0f, CurrentTile.SpriteWidth);
-        CurrentData.boxBoundsX.y = Mathf.Clamp(CurrentData.boxBoundsX.y, 0.0f, CurrentTile.SpriteHeight);
-        CurrentData.boxBoundsY.x = Mathf.Clamp(CurrentData.boxBoundsY.x, 0.0f, CurrentTile.SpriteWidth);
-        CurrentData.boxBoundsY.y = Mathf.Clamp(CurrentData.boxBoundsY.y, 0.0f, CurrentTile.SpriteHeight);
+        CurrentData.boxBoundsX.x = Mathf.Clamp(CurrentData.boxBoundsX.x, 0.0f, CurrentSprite.SpriteWidth);
+        CurrentData.boxBoundsX.y = Mathf.Clamp(CurrentData.boxBoundsX.y, 0.0f, CurrentSprite.SpriteHeight);
+        CurrentData.boxBoundsY.x = Mathf.Clamp(CurrentData.boxBoundsY.x, 0.0f, CurrentSprite.SpriteWidth);
+        CurrentData.boxBoundsY.y = Mathf.Clamp(CurrentData.boxBoundsY.y, 0.0f, CurrentSprite.SpriteHeight);
 
         EditorUtilities.SetPositionHandleValue(id + 0, new Vector2(0, CurrentData.boxBoundsY.x));
         EditorUtilities.SetPositionHandleValue(id + 1, new Vector2(0, CurrentData.boxBoundsY.y));

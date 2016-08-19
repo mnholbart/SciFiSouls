@@ -13,40 +13,42 @@ public class ZMovement : ActivitySystem, IChangeZHeight {
     Inventory inv { get { return entity.inventory; } }
 
     public void ForceSetFloor(int i, float zHeight) {
+        GameManager.data.SetToFloorFloatLayer(sr, i);
+
+        if (inv)
+            inv.GetCurrentlyEquippedWeapon().SetToFloorLayer(i);
+        transform.position = new Vector3(transform.position.x, transform.position.y, CurrentZ);
+
         currentFloor = i;
         CurrentZ = zHeight;
 
-        string layerName = GameManager.data.GetLayerIndex("Floor" + i.ToString()).ToString();
-        sr.sortingLayerName = layerName;
-        if (inv)
-            inv.GetCurrentlyEquippedWeapon().SetLayerName(layerName);
-        transform.position = new Vector3(transform.position.x, transform.position.y, CurrentZ);
+        CameraManager.instance.ChangeZHeight(currentFloor, CurrentZ);
     }
 
     public void Activity_GoUpFloor() {
         CurrentZ = DesiredZ;
-        string layerName = GameManager.data.GetLayerIndex("Floor" + desiredFloor.ToString()).ToString();
-        sr.sortingLayerName = layerName;
+        currentFloor = desiredFloor;
+        GameManager.data.SetToFloorFloatLayer(sr, currentFloor);
         if (inv)
-            inv.GetCurrentlyEquippedWeapon().SetLayerName(layerName);
+            inv.GetCurrentlyEquippedWeapon().SetToFloorLayer(currentFloor);
         transform.position = new Vector3(transform.position.x, transform.position.y, CurrentZ);
     }
 
     public void Activity_GoDownFloor() {
-        CurrentZ = DesiredZ;        
-        string layerName = GameManager.data.GetLayerIndex("Floor" + desiredFloor.ToString()).ToString();
-        sr.sortingLayerName = layerName;
+        CurrentZ = DesiredZ;
+        currentFloor = desiredFloor;
+        GameManager.data.SetToFloorFloatLayer(sr, currentFloor);
         if (inv)
-            inv.GetCurrentlyEquippedWeapon().SetLayerName(layerName);
+            inv.GetCurrentlyEquippedWeapon().SetToFloorLayer(currentFloor);
         transform.position = new Vector3(transform.position.x, transform.position.y, CurrentZ);
     }
 
     void OnSuccess_GoUpFloor() {
-        ResetZMovement();
+        CameraManager.instance.ChangeZHeight(currentFloor, CurrentZ);
     }
 
     void OnSuccess_GoDownFloor() {
-        ResetZMovement();
+        CameraManager.instance.ChangeZHeight(currentFloor, CurrentZ);
     }
 
     void OnFail_GoUpFloor() {

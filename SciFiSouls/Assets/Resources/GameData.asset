@@ -12,6 +12,18 @@ MonoBehaviour:
   m_Name: GameData
   m_EditorClassIdentifier: 
   layers:
+  - FloorB5
+  - FloorB5Float
+  - FloorB4
+  - FloorB4Float
+  - FloorB3
+  - FloorB3Float
+  - FloorB2
+  - FloorB2Float
+  - FloorB1
+  - FloorB1Float
+  - Floor0
+  - Floor0Float
   - Floor1
   - Floor1Float
   - Floor2
@@ -20,5 +32,3 @@ MonoBehaviour:
   - Floor3Float
   - Floor4
   - Floor4Float
-  - Floor5
-  - Floor5Float

@@ -4,7 +4,7 @@ using System.Collections;
 public class Projectile : MonoBehaviour {
 
     AttackBase source;
-    Rigidbody2D body;
+    Rigidbody body;
 
     Vector3 startVector;
     public Vector3 moveVector;
@@ -14,7 +14,7 @@ public class Projectile : MonoBehaviour {
     
 
     void Start() {
-        body = GetComponent<Rigidbody2D>();
+        body = GetComponent<Rigidbody>();
         gameObject.layer = LayerMask.NameToLayer("Projectiles");
         ProjectileManager.instance.RegisterProjectile(this.transform);
     }
@@ -43,9 +43,13 @@ public class Projectile : MonoBehaviour {
         transform.rotation = rotation;
     }
 
-    void OnTriggerEnter2D(Collider2D collide) {
+    void OnTriggerEnter(Collider collide) {
+        if (collide.GetComponentInParent<WallDepth>()) {
+            WallCollision();
+            return;
+        }
+
         bool passed = collide.GetComponent<IHeightCollider>().PassedHeightCheck();
-        Debug.Log(passed);
         if (passed) {
             if (source.GetComponent<IHeightCallbacks>() != null)
                 source.GetComponent<IHeightCallbacks>().OnPassHeightCheck(this.gameObject);
@@ -53,5 +57,9 @@ public class Projectile : MonoBehaviour {
         } else {
             source.GetComponent<IHeightCallbacks>().OnFailHeightCheck(this.gameObject);
         }
+    }
+
+    void WallCollision() {
+        Destroy(gameObject);
     }
 }

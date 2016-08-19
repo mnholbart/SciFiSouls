@@ -20,8 +20,8 @@ public class PlayerManager : MonoBehaviour {
 	}
 
 	public void InitializePlayer() {
-		GameObject obj = Instantiate(PlayerPrefab) as GameObject;
+		GameObject obj = Instantiate(PlayerPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
 		Player = obj.GetComponent<Player>();
-        Player.Spawn(new Vector3(0, 0, 0), 1, -.01f);
+        Player.Spawn(new Vector3(0, 0, 0), 0, -.01f);
 	}
 }

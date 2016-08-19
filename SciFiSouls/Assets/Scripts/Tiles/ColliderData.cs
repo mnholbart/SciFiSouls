@@ -38,6 +38,7 @@ public class ColliderData  {
 
         public int SpriteWidth;
         public int SpriteHeight;
+        public float ColliderDepth = .1f;
 
         public Vector2[] points;
 

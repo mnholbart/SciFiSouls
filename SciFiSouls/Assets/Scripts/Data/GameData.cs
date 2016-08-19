@@ -36,6 +36,29 @@ public class GameData : ScriptableObject {
         }
     }
 
+    public void SetToFloorLayer(SpriteRenderer sr, int floorNumber) {
+        int baseID = layers.IndexOf("Floor0");
+        baseID += floorNumber * 2;
+        sr.sortingLayerName = layers[baseID];
+    }
+
+    public void SetToFloorFloatLayer(SpriteRenderer sr, int floorNumber) {
+        int baseID = layers.IndexOf("Floor0");
+        baseID += floorNumber * 2;
+        baseID++;
+        sr.sortingLayerName = layers[baseID];
+    }
+
+    public int GetFloorIndex(int i) {
+        int baseIndex = layers.IndexOf("Floor0");
+        baseIndex += i;
+        return baseIndex;
+    }
+
+    public int GetFloorCount() {
+        return layers.Count / 2;
+    }
+
 	public string GetLayerName(int layerIndex) {
         if (layers.Count == 0) {
             Debug.LogWarning("No layer exists, add one with the layer editor");

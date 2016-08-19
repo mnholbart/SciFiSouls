@@ -17,7 +17,7 @@ public class TileHelper : MonoBehaviour {
 	public float GridDistance = 20f;
 	public static int Width = 1;
 	public static int Height = 1;
-	public static GameObject SelectedTile;
+	public static SpriteBase SelectedTile;
 
     //Tile specific paste settings
     public static float PasteHeight = 0;
@@ -55,7 +55,7 @@ public class TileHelper : MonoBehaviour {
 		SceneView.onSceneGUIDelegate -= this.GridUpdate;
 	}
 
-	public void UpdateSelectedTile(GameObject g) {
+	public void UpdateSelectedTile(SpriteBase g) {
 		SelectedTile = g;
 	}
 
@@ -131,27 +131,41 @@ public class TileHelper : MonoBehaviour {
     /// Create a tile at the target mouse position using the Tile Editor selected tile
     /// </summary>
 	void AddTile(Event e) {
-        GameObject prefab = TileHelper.SelectedTile;
-
-        if (prefab == null || !prefab.GetComponent<Tile>())
+        if (SelectedTile == null) {
+            Debug.LogWarning("[TileHelper] Sprite to be created is null");
             return;
-        Ray r = Camera.current.ScreenPointToRay(new Vector3(e.mousePosition.x, -e.mousePosition.y + Camera.current.pixelHeight));
-        float width = TileHelper.Width;
-        float height = TileHelper.Height;
-        Vector3 mousePos = r.origin;
-        if (GridSnapEnabled) {
-            mousePos.x = Mathf.FloorToInt(mousePos.x / width) * width + width / 2f;
-            mousePos.y = Mathf.FloorToInt(mousePos.y / height) * height + height / 2f;
         }
 
+        GameObject prefab = SelectedTile.gameObject;
+        int size = Mathf.RoundToInt(prefab.GetComponent<SpriteRenderer>().sprite.rect.width);
+        size = size / 16; //16 is base unit size so convert to unit size
+
+        if (prefab == null || !prefab.GetComponent<SpriteBase>() || Camera.current == null)
+            return;
+
+        Vector3 newPos = new Vector3(0, 0, 0);
+        Ray r = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+        Plane p = new Plane(Vector3.forward, Vector3.zero);
+        float d = 0;
+        if (p.Raycast(r, out d)) {
+            newPos = r.GetPoint(d);
+        }
+
+        float width = TileHelper.Width;
+        float height = TileHelper.Height;
+        if (GridSnapEnabled) {
+            newPos.x = Mathf.CeilToInt(newPos.x / width) - (size%2 == 1 ? 1 : 0) * width + (size%2 == 1 ? (width / 2f) : 0);
+            newPos.y = Mathf.CeilToInt(newPos.y / height) - (size%2 == 1 ? 1 : 0) * height + (size%2 == 1 ? (height / 2f) : 0);
+        }
+        
         GameObject obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-        obj.transform.position = new Vector3(mousePos.x, mousePos.y, HeightSnapEnabled ? PasteHeight : 0);
+        Undo.RegisterCreatedObjectUndo(obj, "Create Tile" + SelectedTile.name);
+        obj.transform.position = new Vector3(newPos.x, newPos.y, HeightSnapEnabled ? PasteHeight : 0);
         obj.transform.rotation = Quaternion.identity;
-        Tile t = obj.GetComponent<Tile>();
+        SpriteBase t = obj.GetComponent<SpriteBase>();
         t.SetLayerIndex(LayerIndex, data);
         t.SetSubLayerIndex(SublayerIndex, data);
 
-        Undo.RegisterCreatedObjectUndo(obj, "Create Tile: " + obj.name);
     }
 
 	void OnDrawGizmos() {

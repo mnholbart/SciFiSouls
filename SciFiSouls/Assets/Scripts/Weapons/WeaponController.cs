@@ -45,8 +45,8 @@ public class WeaponController : ActivitySystem {
         base.Update();
     }
 
-    public void SetLayerName(string layerName) {
-        sr.sortingLayerName = layerName;
+    public void SetToFloorLayer(int i) {
+        GameManager.data.SetToFloorFloatLayer(sr, i);
     }
 
     void UpdateWeapon() {

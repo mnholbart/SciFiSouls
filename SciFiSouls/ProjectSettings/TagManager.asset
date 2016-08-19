@@ -20,7 +20,7 @@ TagManager:
   - HeightBoxes
   - WalkingCollider
   - EntityPhysical
-  - 
+  - Wall
   - 
   - 
   - 
@@ -41,33 +41,63 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: 0
+  - name: FloorB5
+    uniqueID: 2959492867
+    locked: 0
+  - name: FloorB5Float
+    uniqueID: 4151782145
+    locked: 0
+  - name: FloorB4
+    uniqueID: 4185028419
+    locked: 0
+  - name: FloorB4Float
+    uniqueID: 2068367207
+    locked: 0
+  - name: FloorB3
+    uniqueID: 2902449781
+    locked: 0
+  - name: FloorB3Float
+    uniqueID: 1250425673
+    locked: 0
+  - name: FloorB2
+    uniqueID: 453034667
+    locked: 0
+  - name: FloorB2Float
+    uniqueID: 4102203147
+    locked: 0
+  - name: FloorB1
+    uniqueID: 3327623789
+    locked: 0
+  - name: FloorB1Float
+    uniqueID: 1969632795
+    locked: 0
+  - name: Floor0
     uniqueID: 904673745
     locked: 0
-  - name: 1
+  - name: Floor0Float
     uniqueID: 3388201691
     locked: 0
-  - name: 2
+  - name: Floor1
     uniqueID: 4278063629
     locked: 0
-  - name: 3
+  - name: Floor1Float
     uniqueID: 1722767397
     locked: 0
-  - name: 4
+  - name: Floor2
     uniqueID: 3327454359
     locked: 0
-  - name: 5
-    uniqueID: 3168314681
-    locked: 0
-  - name: 6
+  - name: Floor2Float
     uniqueID: 1296356575
     locked: 0
-  - name: 7
+  - name: Floor3
+    uniqueID: 3168314681
+    locked: 0
+  - name: Floor3Float
     uniqueID: 3622715119
     locked: 0
-  - name: 8
+  - name: Floor4
     uniqueID: 3469201997
     locked: 0
-  - name: 9
+  - name: Floor4Float
     uniqueID: 3810982005
     locked: 0
