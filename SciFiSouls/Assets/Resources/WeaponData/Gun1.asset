@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Gun1
   WeaponSprite: {fileID: 21300002, guid: 523f1f86ac6daff4d9aee3c2efbd973a, type: 3}
-  WeaponRenderOffsetFromPlayer: {x: 0, y: 0.055, z: 0}
+  WeaponRenderOffsetFromPlayer: {x: 0.126, y: 0.434, z: 0}
   Offset: {x: 0.18, y: 0.45, z: 0}
   Sprites:
   - {fileID: 21300006, guid: 17bcdbde6bc94e849bcb7fd546939c19, type: 3}

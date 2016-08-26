@@ -12,7 +12,7 @@ public class GameData : ScriptableObject {
 	/// <summary>
 	/// Gets the index of the layer.
 	/// </summary>
-	public int GetLayerIndex(Tile tile) {
+	public int GetLayerIndex(SpriteBase tile) {
 		if (layers.Count == 0) {
             return -1;
         } else if (layers.Contains(tile.BaseLayerName)) {

@@ -3,11 +3,11 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 
-[CustomEditor(typeof(Tile))]
+[CustomEditor(typeof(SpriteBase))]
 [CanEditMultipleObjects]
 public class TileEditor : Editor {
 
-    Tile tile;
+    SpriteBase tile;
     GameData data;
 
     bool defaultInspector = false;
@@ -16,11 +16,13 @@ public class TileEditor : Editor {
     SerializedProperty walkingNoiseProperty;
     SerializedProperty destructableProperty;
     SerializedProperty healthProperty;
+    SerializedProperty coverProperty;
 
     void OnEnable() {
         tripThresholdProperty = serializedObject.FindProperty("TripThresholdType");
         walkingNoiseProperty = serializedObject.FindProperty("WalkingNoiseType");
         destructableProperty = serializedObject.FindProperty("destructable");
+        coverProperty = serializedObject.FindProperty("cover");
         healthProperty = serializedObject.FindProperty("MaxHealth");
     }
 
@@ -93,6 +95,8 @@ public class TileEditor : Editor {
 
             EditorGUI.indentLevel--;
         }
+
+        EditorGUILayout.PropertyField(coverProperty);
 
         serializedObject.ApplyModifiedProperties();
         EditorUtility.SetDirty(tile);

@@ -20,6 +20,7 @@ public class Gun1 : AttackBase, IHeightCallbacks {
         p.speed = data.myWeapon.Speed;
         p.maxRange = data.myWeapon.Range;
         p.SetRotation(data.targetDegreeRotation + data.myWeapon.SpriteRotations[0]);
+        p.AddCoverObjects(data.CoverObjects);
         g.transform.localScale = new Vector3(2, 2, 1);
         CapsuleCollider box = g.GetComponent<CapsuleCollider>();
         box.radius = .02f;

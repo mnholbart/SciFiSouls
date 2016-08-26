@@ -13,6 +13,7 @@ public class ColliderData  {
 
     public Data data = new Data();
     public Data moveData = new Data();
+    public Data triggerData = new Data();
 
     [System.Serializable]
     public class Data {

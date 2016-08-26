@@ -15,6 +15,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &113478
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 492776}
+  - 114: {fileID: 11482400}
+  m_Layer: 11
+  m_Name: HeightCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &158250
 GameObject:
   m_ObjectHideFlags: 0
@@ -23,9 +39,8 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 449128}
-  - 114: {fileID: 11482400}
   m_Layer: 11
-  m_Name: HeightCollider
+  m_Name: TriggerCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -87,7 +102,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 489048}
-  m_RootOrder: 0
+  m_RootOrder: 3
 --- !u!4 &470692
 Transform:
   m_ObjectHideFlags: 1
@@ -107,13 +122,26 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 171804}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.69470465, y: 2.0122118, z: -0.0048828125}
+  m_LocalPosition: {x: -8.296881, y: 3.0628245, z: -0.0048828125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 449128}
+  - {fileID: 492776}
   - {fileID: 446508}
   - {fileID: 470692}
+  - {fileID: 449128}
   m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!4 &492776
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 113478}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 489048}
   m_RootOrder: 0
 --- !u!114 &11418138
 MonoBehaviour:
@@ -153,6 +181,7 @@ MonoBehaviour:
       CurrentColliderType: 0
       SpriteWidth: 0
       SpriteHeight: 0
+      ColliderDepth: 0.1
       points: []
       boxBoundsX: {x: 0, y: 0}
       boxBoundsY: {x: 0, y: 0}
@@ -163,6 +192,7 @@ MonoBehaviour:
       CurrentColliderType: 0
       SpriteWidth: 0
       SpriteHeight: 0
+      ColliderDepth: 0.1
       points: []
       boxBoundsX: {x: 0, y: 0}
       boxBoundsY: {x: 0, y: 0}
@@ -181,7 +211,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 11480092, guid: bf2e656637b4507409db93225b0dd02f,
     type: 2}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 158250}
+  m_GameObject: {fileID: 113478}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 760877423f59b8340bb345ebb148af16, type: 3}

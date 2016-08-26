@@ -165,7 +165,6 @@ public class TileHelper : MonoBehaviour {
         SpriteBase t = obj.GetComponent<SpriteBase>();
         t.SetLayerIndex(LayerIndex, data);
         t.SetSubLayerIndex(SublayerIndex, data);
-
     }
 
 	void OnDrawGizmos() {

@@ -14,6 +14,10 @@ public class TileHeight : MonoBehaviour, IHeightCollider {
         CopyCollider();
     }
 
+    public GameObject GetParentObject() {
+        return transform.parent.gameObject;
+    }
+
     void CopyCollider() {
         switch ((int)MyTile.MyColliderData.data.CurrentColliderType) {
             case 0: return;
@@ -33,7 +37,9 @@ public class TileHeight : MonoBehaviour, IHeightCollider {
             c.isTrigger = true;
         gameObject.layer = LayerMask.NameToLayer("HeightBoxes");
 
-        gameObject.AddComponent<Rigidbody>();
+        Rigidbody r = gameObject.AddComponent<Rigidbody>();
+        r.isKinematic = true;
+        r.useGravity = false;
     }
 
     public bool PassedHeightCheck() {

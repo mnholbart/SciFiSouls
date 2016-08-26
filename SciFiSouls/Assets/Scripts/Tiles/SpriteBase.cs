@@ -6,6 +6,7 @@ using System.Collections;
 public abstract class SpriteBase : MonoBehaviour, ISprite {
 
     //TileData properties
+    public bool cover;
     public bool destructable;
     public bool isWall;
     public bool WalkingCollider;
@@ -127,8 +128,8 @@ public abstract class SpriteBase : MonoBehaviour, ISprite {
         if (s == null)
             return;
         GetComponent<SpriteRenderer>().sprite = s;
-        SpriteWidth = MyColliderData.data.SpriteWidth = s.texture.width;
-        SpriteHeight = MyColliderData.data.SpriteHeight = s.texture.height;
+        SpriteWidth = MyColliderData.data.SpriteWidth = MyColliderData.moveData.SpriteWidth = MyColliderData.triggerData.SpriteWidth = s.texture.width;
+        SpriteHeight = MyColliderData.data.SpriteHeight = MyColliderData.moveData.SpriteHeight = MyColliderData.triggerData.SpriteHeight = s.texture.height;
     }
 
     public void UpdateCollision() {
@@ -154,6 +155,28 @@ public abstract class SpriteBase : MonoBehaviour, ISprite {
         }
     }
 
+    float GetTileScaleX() {
+        return SpriteWidth / 128;
+    }
+
+    float GetTileScaleY() {
+        return SpriteWidth / 128;
+    }
+
+    public void UpdateTriggerCollision() {
+        GameObject g = transform.FindChild("TriggerCollider").gameObject;
+        ColliderData.Data data = MyColliderData.triggerData;
+        SetCollider(data, g);
+        switch (MyColliderData.triggerData.CurrentColliderType) {
+            case ColliderData.ColliderTypes.None: break;
+            case ColliderData.ColliderTypes.Box: UpdateBoxCollider(g, data, MyColliderData.triggerData.ColliderDepth); break;
+            case ColliderData.ColliderTypes.Circle: UpdateCylinderCollider(g, data, MyColliderData.triggerData.ColliderDepth); break;
+            case ColliderData.ColliderTypes.Mesh: UpdateMeshCollider(g, data, 0f, -MyColliderData.triggerData.ColliderDepth); break;
+        }
+        if (g.GetComponent<Collider>())
+            g.GetComponent<Collider>().isTrigger = true;
+    }
+
     void UpdateMeshCollider(GameObject g, ColliderData.Data data, float zStart, float zEnd) {
         MeshCollider mc = g.GetComponent<MeshCollider>();
         if (data.MeshColliderMesh == null)
@@ -162,7 +185,7 @@ public abstract class SpriteBase : MonoBehaviour, ISprite {
 
         List<Vector2> verts = new List<Vector2>();
         for (int i = 0; i < data.points.Length; i++) {
-            verts.Add(new Vector2(data.points[i].x / SpriteWidth - .5f, (SpriteHeight - data.points[i].y) / SpriteHeight - .5f));
+            verts.Add(new Vector2((data.points[i].x / SpriteWidth - .5f), (SpriteHeight - data.points[i].y) / SpriteHeight - .5f) * GetTileScaleY());
         }
         data.MeshColliderMesh = TileUtility.CreateMesh(verts.ToArray(), zStart, zEnd);
         mc.sharedMesh = data.MeshColliderMesh;
@@ -171,8 +194,8 @@ public abstract class SpriteBase : MonoBehaviour, ISprite {
     void UpdateBoxCollider(GameObject g, ColliderData.Data data, float depth) {
         BoxCollider bc = g.GetComponent<BoxCollider>();
         Vector3 size = new Vector3();
-        size.x = (data.boxBoundsX.y - data.boxBoundsX.x) / SpriteWidth;
-        size.y = (data.boxBoundsY.y - data.boxBoundsY.x) / SpriteHeight;
+        size.x = (data.boxBoundsX.y - data.boxBoundsX.x) / SpriteWidth * GetTileScaleX();
+        size.y = (data.boxBoundsY.y - data.boxBoundsY.x) / SpriteHeight * GetTileScaleY();
         size.z = depth;
         bc.size = size;
         float centerX = ((data.boxBoundsX.x + data.boxBoundsX.y) / 2) / SpriteWidth - .5f;
@@ -183,11 +206,11 @@ public abstract class SpriteBase : MonoBehaviour, ISprite {
 
     void UpdateCylinderCollider(GameObject g, ColliderData.Data data, float depth) {
         CapsuleCollider cc = g.GetComponent<CapsuleCollider>();
-        float centerX = data.cylinderCenter.x / SpriteWidth - .5f;
-        float centerY = 1 - data.cylinderCenter.y / SpriteHeight - .5f;
+        float centerX = (data.cylinderCenter.x / SpriteWidth - .5f) * GetTileScaleX();
+        float centerY = (1 - data.cylinderCenter.y / SpriteHeight - .5f) * GetTileScaleY();
         float centerZ = transform.position.z - depth / 2f;
         cc.center = new Vector3(centerX, centerY, centerZ);
-        cc.radius = data.radius / SpriteWidth;
+        cc.radius = data.radius / SpriteWidth * GetTileScaleX();
         cc.height = depth;
         cc.direction = 2;
     }

@@ -219,11 +219,19 @@ public class TileWindow : EditorWindow {
             EditorGUI.indentLevel--;
         }
 
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Is Cover", GUILayout.MaxWidth(80));
+        CurrentTile.cover = EditorGUILayout.Toggle(CurrentObject.cover);
+        EditorGUILayout.EndHorizontal();
+
         if (GUILayout.Button("Edit Collider"))
             OpenCollisionWindow();
 
         if (GUILayout.Button("Edit Walk Collider"))
             OpenWalkCollisionWindow();
+
+        if (GUILayout.Button("Edit Trigger Collider"))
+            OpenTriggerCollisionWindow();
 
         DrawPipeConnectionEditor();
 
@@ -265,11 +273,19 @@ public class TileWindow : EditorWindow {
             EditorGUI.indentLevel--;
         }
 
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Is Cover", GUILayout.MaxWidth(80));
+        CurrentTile.cover = EditorGUILayout.Toggle(CurrentPipe.cover);
+        EditorGUILayout.EndHorizontal();
+
         if (GUILayout.Button("Edit Collider"))
             OpenCollisionWindow();
 
         if (GUILayout.Button("Edit Walk Collider"))
             OpenWalkCollisionWindow();
+
+        if (GUILayout.Button("Edit Trigger Collider"))
+            OpenTriggerCollisionWindow();
 
         DrawPipeConnectionEditor();
 
@@ -328,12 +344,20 @@ public class TileWindow : EditorWindow {
             EditorGUI.indentLevel--;
             EditorGUI.indentLevel--;
         }
-        
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Is Cover", GUILayout.MaxWidth(80));
+        CurrentTile.cover = EditorGUILayout.Toggle(CurrentTile.cover);
+        EditorGUILayout.EndHorizontal();
+
         if (GUILayout.Button("Edit Collider"))
             OpenCollisionWindow();
 
         if (GUILayout.Button("Edit Walk Collider"))
             OpenWalkCollisionWindow();
+
+        if (GUILayout.Button("Edit Trigger Collider"))
+            OpenTriggerCollisionWindow();
 
         EditorGUILayout.EndScrollView();
         GUILayout.EndArea();
@@ -425,6 +449,15 @@ public class TileWindow : EditorWindow {
         }
         collisionWindow.CurrentSprite = GetSelectedTile().GetComponent<SpriteBase>();
         collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.WalkCollider);
+    }
+
+    void OpenTriggerCollisionWindow() {
+        if (collisionWindow == null) {
+            CollisionEditorWindow window = CollisionEditorWindow.CreateWindow(this);
+            collisionWindow = window;
+        }
+        collisionWindow.CurrentSprite = GetSelectedTile().GetComponent<SpriteBase>();
+        collisionWindow.SetEditMode(CollisionEditorWindow.EditMode.TriggerCollider);
     }
 
     Vector2 layerScrollPos = Vector2.zero;

@@ -15,6 +15,7 @@ public interface IKillable {
 
 public interface IHeightCollider {
     bool PassedHeightCheck();
+    GameObject GetParentObject();
 }
 
 public interface IHeightCallbacks {

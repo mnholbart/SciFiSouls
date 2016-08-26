@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class Projectile : MonoBehaviour {
 
@@ -11,7 +11,8 @@ public class Projectile : MonoBehaviour {
 
     public float speed;
     public float maxRange;
-    
+
+    List<GameObject> coverObjects = new List<GameObject>();
 
     void Start() {
         body = GetComponent<Rigidbody>();
@@ -43,7 +44,16 @@ public class Projectile : MonoBehaviour {
         transform.rotation = rotation;
     }
 
+    public void AddCoverObjects(List<GameObject> objs) {
+        for (int i = 0; i < objs.Count; i++) {
+            coverObjects.Add(objs[i]);
+        }
+    }
+
     void OnTriggerEnter(Collider collide) {
+        if (coverObjects.Contains(collide.GetComponent<IHeightCollider>().GetParentObject()))
+            return;
+
         if (collide.GetComponentInParent<WallDepth>()) {
             WallCollision();
             return;

@@ -32,7 +32,8 @@ public class CollisionEditorWindow : EditorWindow {
 
     public enum EditMode {
         Collider,
-        WalkCollider
+        WalkCollider,
+        TriggerCollider
     }
 
     public EditMode CurrentEditMode = EditMode.Collider;
@@ -52,6 +53,8 @@ public class CollisionEditorWindow : EditorWindow {
             CurrentData = CurrentSprite.MyColliderData.data;
         } else if (CurrentEditMode == EditMode.WalkCollider) {
             CurrentData = CurrentSprite.MyColliderData.moveData;
+        } else if (CurrentEditMode == EditMode.TriggerCollider) {
+            CurrentData = CurrentSprite.MyColliderData.triggerData;
         }
 
         DrawToolbar();
@@ -186,6 +189,8 @@ public class CollisionEditorWindow : EditorWindow {
                 CurrentSprite.UpdateCollision();
             if (CurrentEditMode == EditMode.WalkCollider)
                 CurrentSprite.UpdateWalkCollision();
+            if (CurrentEditMode == EditMode.TriggerCollider)
+                CurrentSprite.UpdateTriggerCollision();
 
         }
         GUILayout.EndHorizontal();
@@ -196,6 +201,8 @@ public class CollisionEditorWindow : EditorWindow {
             CurrentEditMode = EditMode.WalkCollider;
         } else if (mode == EditMode.Collider) {
             CurrentEditMode = EditMode.Collider;
+        } else if (mode == EditMode.TriggerCollider) {
+            CurrentEditMode = EditMode.TriggerCollider;
         }
     }
 
@@ -223,6 +230,8 @@ public class CollisionEditorWindow : EditorWindow {
                 coll.isTrigger = EditorGUILayout.Toggle(coll.isTrigger);
                 EditorGUILayout.EndHorizontal();
             }
+        }
+        if (CurrentEditMode == EditMode.TriggerCollider || CurrentEditMode == EditMode.Collider) {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Collider Depth", GUILayout.MaxWidth(90));
             CurrentData.ColliderDepth = EditorGUILayout.Slider(CurrentData.ColliderDepth, 0.1f, 2.0f);
@@ -304,7 +313,7 @@ public class CollisionEditorWindow : EditorWindow {
 
         CurrentData.cylinderCenter.x = Mathf.Clamp(CurrentData.cylinderCenter.x, 0.0f, CurrentSprite.SpriteWidth);
         CurrentData.cylinderCenter.y = Mathf.Clamp(CurrentData.cylinderCenter.y, 0.0f, CurrentSprite.SpriteHeight);
-        CurrentData.radius = Mathf.Clamp(CurrentData.radius, 1, CurrentData.SpriteWidth / 2);
+        CurrentData.radius = Mathf.Clamp(CurrentData.radius, 1, CurrentData.SpriteWidth / 2f);
         CurrentData.cylinderCenter.z = 0;
 
         EditorUtilities.SetPositionHandleValue(id, new Vector2(CurrentData.cylinderCenter.x, CurrentData.cylinderCenter.y));
@@ -330,7 +339,6 @@ public class CollisionEditorWindow : EditorWindow {
 
         // Draw grab handles
         Vector3 handlePos;
-
         int id = 135635;
 
         // Draw top handle

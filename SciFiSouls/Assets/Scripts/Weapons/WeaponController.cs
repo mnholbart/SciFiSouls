@@ -20,6 +20,7 @@ public class WeaponController : ActivitySystem {
     SpriteRenderer sr;
     Shoot shoot { get { return entity.shoot; } }
     Movement movement { get { return entity.movement; } }
+    Cover cover { get { return entity.cover; } }
     PlayerController pc;
 
     public enum EquippedWeaponType {
@@ -60,6 +61,7 @@ public class WeaponController : ActivitySystem {
         data.myWeapon = EquippedWeapon;
         data.LayerIndex = sr.sortingLayerID;
         data.SubLayerIndex = sr.sortingOrder;
+        data.CoverObjects = cover.coverObjects;
 
         if (movement)
             data.entityVelocity = movement.body.velocity;

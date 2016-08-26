@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public abstract class AttackBase : MonoBehaviour {
 
@@ -12,6 +12,8 @@ public abstract class AttackBase : MonoBehaviour {
 
         public int LayerIndex;
         public int SubLayerIndex;
+
+        public List<GameObject> CoverObjects;
     }
 
     public abstract void Shoot(AttackData data);

@@ -35,4 +35,18 @@ public class WallDepth : MonoBehaviour {
         box.transform.localScale = new Vector3(1, 1, boxHeight);
         box.transform.localPosition = new Vector3(0, 0, (boxHeight / 2) * Mathf.Sign(i));
     }
+
+    void OnValidate() {
+        UpdateFloorDepthsList();
+    }
+
+    public void UpdateFloorDepthsList() {
+        GameData data = (GameData)Resources.Load("GameData", typeof(GameData));
+
+        for (int i = 0; i < data.layers.Count; i++) {
+            while (FloorZHeights.Count < data.GetFloorCount()) {
+                FloorZHeights.Add(0f);
+            }
+        }
+    }
 }

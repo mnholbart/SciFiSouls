@@ -14,6 +14,7 @@ public class Entity : MonoBehaviour {
     [HideInInspector] public Inventory inventory;
     [HideInInspector] public ZMovement zMovement;
     [HideInInspector] public SpriteRenderer SpriteRenderer;
+    [HideInInspector] public Cover cover;
 
     public void Awake() {
         sprint = GetComponent<Sprint>();
@@ -26,6 +27,7 @@ public class Entity : MonoBehaviour {
         sneak = GetComponent<Sneak>();
         inventory = GetComponent<Inventory>();
         zMovement = GetComponent<ZMovement>();
+        cover = GetComponent<Cover>();
         SpriteRenderer = GetComponent<SpriteRenderer>();
     }
 

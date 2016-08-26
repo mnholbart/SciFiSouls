@@ -12,25 +12,24 @@ public class WallDepthEditor : Editor {
     SerializedProperty heightValues;
 
     void OnEnable() {
+        wall = (WallDepth)target;
         heightValues = serializedObject.FindProperty("FloorZHeights");
         data = (GameData)Resources.Load("GameData", typeof(GameData));
-
-        for (int i = 0; i < targets.Length; i++) {
-            WallDepth wd = (WallDepth)targets[i];
-            while (wd.FloorZHeights.Count < data.GetFloorCount()) {
-                wd.FloorZHeights.Add(0f);
-            }
-        }
-        serializedObject.ApplyModifiedProperties();
-        serializedObject.Update();
+        wall.UpdateFloorDepthsList();
     }
 
     public override void OnInspectorGUI() {
+        if (heightValues == null || data == null)
+            OnEnable();
+
         serializedObject.Update();
         wall = (WallDepth)target;
 
+        if (heightValues == null)
+            return;
+
         int j = 0;
-        for (int i = 0; i < (data.layers.Count); i += 2) {
+        for (int i = 0; i < (heightValues.arraySize); i += 2) {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(data.layers[i], GUILayout.MaxWidth(100));
             EditorGUILayout.LabelField("Height", GUILayout.MaxWidth(80));

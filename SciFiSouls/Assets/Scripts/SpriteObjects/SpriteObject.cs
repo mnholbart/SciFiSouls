@@ -4,4 +4,5 @@ using System.Collections;
 public class SpriteObject : SpriteBase {
 
 
+
 }
